@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:15
+    container_name: carpool-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: carpool
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data # DB가 꺼져도 데이터가 보존됩니다.
