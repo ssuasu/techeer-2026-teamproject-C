@@ -7,6 +7,7 @@ import com.techeer.carpool.domain.member.dto.TokenResponse;
 import com.techeer.carpool.domain.member.service.MemberLoginService;
 import com.techeer.carpool.domain.member.service.MemberSignupService;
 import com.techeer.carpool.domain.member.service.TokenReissueService;
+import com.techeer.carpool.global.common.ApiResponse;
 import com.techeer.carpool.global.exception.CarpoolException;
 import com.techeer.carpool.global.exception.ErrorCode;
 import com.techeer.carpool.global.jwt.JwtTokenProvider;
@@ -37,30 +38,29 @@ public class AuthController {
     private boolean cookieSecure;
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@Valid @RequestBody SignupRequest request) {
+    public ResponseEntity<ApiResponse<Void>> signup(@Valid @RequestBody SignupRequest request) {
         memberSignupService.signup(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.of("회원가입이 완료되었습니다."));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request,
-                                               HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequest request,
+                                                            HttpServletResponse response) {
         AuthTokens tokens = memberLoginService.login(request);
         setRefreshTokenCookie(response, tokens.refreshToken());
-        return ResponseEntity.ok(TokenResponse.builder()
-                .accessToken(tokens.accessToken())
-                .build());
+        return ResponseEntity.ok(ApiResponse.of("로그인 성공",
+                TokenResponse.builder().accessToken(tokens.accessToken()).build()));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResponse> refresh(HttpServletRequest request,
-                                                 HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<TokenResponse>> refresh(HttpServletRequest request,
+                                                              HttpServletResponse response) {
         String refreshToken = extractRefreshTokenCookie(request);
         AuthTokens tokens = tokenReissueService.reissue(refreshToken);
         setRefreshTokenCookie(response, tokens.refreshToken());
-        return ResponseEntity.ok(TokenResponse.builder()
-                .accessToken(tokens.accessToken())
-                .build());
+        return ResponseEntity.ok(ApiResponse.of("토큰 재발급 성공",
+                TokenResponse.builder().accessToken(tokens.accessToken()).build()));
     }
 
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {

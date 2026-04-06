@@ -7,6 +7,7 @@ import com.techeer.carpool.domain.post.service.PostCreateService;
 import com.techeer.carpool.domain.post.service.PostDeleteService;
 import com.techeer.carpool.domain.post.service.PostReadService;
 import com.techeer.carpool.domain.post.service.PostUpdateService;
+import com.techeer.carpool.global.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,30 +26,30 @@ public class PostController {
     private final PostDeleteService postDeleteService;
 
     @PostMapping
-    public ResponseEntity<PostResponse> createPost(@RequestBody PostCreateRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(postCreateService.createPost(request));
+    public ResponseEntity<ApiResponse<PostResponse>> createPost(@RequestBody PostCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.of("게시글이 생성되었습니다.", postCreateService.createPost(request)));
     }
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> getAllPosts() {
-        return ResponseEntity.ok(postReadService.getAllPosts());
+    public ResponseEntity<ApiResponse<List<PostResponse>>> getAllPosts() {
+        return ResponseEntity.ok(ApiResponse.of("게시글 목록 조회 성공", postReadService.getAllPosts()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponse> getPostById(@PathVariable Long id) {
-        return ResponseEntity.ok(postReadService.getPostById(id));
+    public ResponseEntity<ApiResponse<PostResponse>> getPostById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.of("게시글 조회 성공", postReadService.getPostById(id)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PostResponse> updatePost(
-            @PathVariable Long id,
-            @RequestBody PostUpdateRequest request) {
-        return ResponseEntity.ok(postUpdateService.updatePost(id, request));
+    public ResponseEntity<ApiResponse<PostResponse>> updatePost(@PathVariable Long id,
+                                                                @RequestBody PostUpdateRequest request) {
+        return ResponseEntity.ok(ApiResponse.of("게시글이 수정되었습니다.", postUpdateService.updatePost(id, request)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deletePost(@PathVariable Long id) {
         postDeleteService.deletePost(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.of("게시글이 삭제되었습니다."));
     }
 }
