@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     Optional<Driver> findByMemberIdAndDeletedFalse(Long memberId);
+
+    boolean existsByCarNumber(String carNumber);
 }

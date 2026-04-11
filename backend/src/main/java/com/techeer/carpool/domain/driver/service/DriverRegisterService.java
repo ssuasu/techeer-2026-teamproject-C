@@ -5,6 +5,8 @@ import com.techeer.carpool.domain.driver.dto.DriverResponse;
 import com.techeer.carpool.domain.driver.entity.Driver;
 import com.techeer.carpool.domain.driver.repository.DriverRepository;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
+import com.techeer.carpool.domain.vehicle.entity.CarColor;
+import com.techeer.carpool.domain.vehicle.entity.CarModel;
 import com.techeer.carpool.domain.vehicle.repository.CarColorRepository;
 import com.techeer.carpool.domain.vehicle.repository.CarModelRepository;
 import com.techeer.carpool.global.exception.CarpoolException;
@@ -31,10 +33,14 @@ public class DriverRegisterService {
             throw new CarpoolException(ErrorCode.DRIVER_ALREADY_REGISTERED);
         }
 
-        carModelRepository.findById(request.getCarModelId())
+        if (driverRepository.existsByCarNumber(request.getCarNumber())) {
+            throw new CarpoolException(ErrorCode.CAR_NUMBER_DUPLICATE);
+        }
+
+        CarModel carModel = carModelRepository.findById(request.getCarModelId())
                 .orElseThrow(() -> new CarpoolException(ErrorCode.CAR_MODEL_NOT_FOUND));
 
-        carColorRepository.findById(request.getCarColorId())
+        CarColor carColor = carColorRepository.findById(request.getCarColorId())
                 .orElseThrow(() -> new CarpoolException(ErrorCode.CAR_COLOR_NOT_FOUND));
 
         Driver driver = Driver.builder()
@@ -44,6 +50,6 @@ public class DriverRegisterService {
                 .carNumber(request.getCarNumber())
                 .build();
 
-        return DriverResponse.from(driverRepository.save(driver));
+        return DriverResponse.from(driverRepository.save(driver), carModel, carColor);
     }
 }

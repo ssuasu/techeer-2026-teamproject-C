@@ -59,4 +59,8 @@ public class Driver {
         this.carColorId = carColorId;
         this.carNumber = carNumber;
     }
+
+    public void softDelete() {
+        this.deleted = true;
+    }
 }

@@ -1,6 +1,8 @@
 package com.techeer.carpool.domain.driver.dto;
 
 import com.techeer.carpool.domain.driver.entity.Driver;
+import com.techeer.carpool.domain.vehicle.entity.CarColor;
+import com.techeer.carpool.domain.vehicle.entity.CarModel;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,17 +14,21 @@ public class DriverResponse {
 
     private Long driverId;
     private Long memberId;
-    private Long carModelId;
-    private Long carColorId;
+    private String carModelBrand;
+    private String carModelName;
+    private String carColorName;
+    private String carColorHexCode;
     private String carNumber;
     private LocalDateTime createdAt;
 
-    public static DriverResponse from(Driver driver) {
+    public static DriverResponse from(Driver driver, CarModel carModel, CarColor carColor) {
         return DriverResponse.builder()
                 .driverId(driver.getDriverId())
                 .memberId(driver.getMemberId())
-                .carModelId(driver.getCarModelId())
-                .carColorId(driver.getCarColorId())
+                .carModelBrand(carModel.getBrand())
+                .carModelName(carModel.getName())
+                .carColorName(carColor.getName())
+                .carColorHexCode(carColor.getHexCode())
                 .carNumber(driver.getCarNumber())
                 .createdAt(driver.getCreatedAt())
                 .build();

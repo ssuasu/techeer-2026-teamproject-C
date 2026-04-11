@@ -15,7 +15,8 @@ public enum ErrorCode {
 
     DRIVER_ALREADY_REGISTERED("DRIVER_001", "이미 운전자로 등록되어 있습니다.", HttpStatus.CONFLICT),
     CAR_MODEL_NOT_FOUND("DRIVER_002", "차량 모델을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    CAR_COLOR_NOT_FOUND("DRIVER_003", "차량 색상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    CAR_COLOR_NOT_FOUND("DRIVER_003", "차량 색상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    CAR_NUMBER_DUPLICATE("DRIVER_004", "이미 등록된 차량 번호입니다.", HttpStatus.CONFLICT);
 
     private final String code;
     private final String message;
