@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -13,6 +14,7 @@ public class PostResponse {
 
     private Long id;
     private Long memberId;
+    private String nickname;
     private String title;
     private String departureLocation;
     private Double departureLat;
@@ -26,13 +28,16 @@ public class PostResponse {
     private PostStatus status;
     private String description;
     private boolean autoAccept;
+    private Integer price;
+    private List<String> tags;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static PostResponse from(Post post) {
+    public static PostResponse from(Post post, String nickname) {
         return PostResponse.builder()
                 .id(post.getId())
                 .memberId(post.getMemberId())
+                .nickname(nickname)
                 .title(post.getTitle())
                 .departureLocation(post.getDepartureLocation())
                 .departureLat(post.getDepartureLat())
@@ -46,6 +51,8 @@ public class PostResponse {
                 .status(post.getStatus())
                 .description(post.getDescription())
                 .autoAccept(post.isAutoAccept())
+                .price(post.getPrice())
+                .tags(post.getTags())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();

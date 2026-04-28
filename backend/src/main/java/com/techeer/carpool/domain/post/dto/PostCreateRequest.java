@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -13,7 +14,6 @@ import java.time.LocalDateTime;
 @Builder
 public class PostCreateRequest {
 
-    private Long memberId;
     private String title;
     private String departureLocation;
     private Double departureLat;
@@ -25,4 +25,6 @@ public class PostCreateRequest {
     private int maxPassengers;
     private String description;
     private boolean autoAccept;
+    private Integer price;
+    private List<String> tags;
 }

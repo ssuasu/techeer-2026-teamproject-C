@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -59,6 +61,13 @@ public class Post {
     @Column(nullable = false)
     private boolean autoAccept;
 
+    private Integer price;
+
+    @ElementCollection
+    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "tag")
+    private List<String> tags = new ArrayList<>();
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -87,7 +96,8 @@ public class Post {
                 String departureLocation, Double departureLat, Double departureLng,
                 String destinationLocation, Double destinationLat, Double destinationLng,
                 LocalDateTime departureTime, int maxPassengers,
-                String description, boolean autoAccept) {
+                String description, boolean autoAccept,
+                Integer price, List<String> tags) {
         this.memberId = memberId;
         this.title = title;
         this.departureLocation = departureLocation;
@@ -100,6 +110,8 @@ public class Post {
         this.maxPassengers = maxPassengers;
         this.description = description;
         this.autoAccept = autoAccept;
+        this.price = price;
+        this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
     }
 
     public void updateFrom(PostUpdateRequest request) {
@@ -115,6 +127,8 @@ public class Post {
         this.description = request.getDescription();
         this.autoAccept = request.isAutoAccept();
         this.status = request.getStatus();
+        this.price = request.getPrice();
+        this.tags = request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>();
     }
 
     public void delete() {
