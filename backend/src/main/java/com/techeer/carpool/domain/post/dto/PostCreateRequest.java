@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Builder
 public class PostCreateRequest {
 
-    private Long memberId;
     private String title;
     private String departureLocation;
     private Double departureLat;
