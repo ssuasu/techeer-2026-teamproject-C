@@ -20,9 +20,12 @@ public class PostUpdateService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public PostResponse updatePost(Long id, PostUpdateRequest request) {
+    public PostResponse updatePost(Long id, PostUpdateRequest request, Long requesterId) {
         Post post = postRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
+        if (!post.getMemberId().equals(requesterId)) {
+            throw new CarpoolException(ErrorCode.POST_FORBIDDEN);
+        }
         post.updateFrom(request);
         String nickname = memberRepository.findById(post.getMemberId())
                 .map(Member::getNickname)

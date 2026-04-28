@@ -18,9 +18,9 @@ public class PostCreateService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public PostResponse createPost(PostCreateRequest request) {
+    public PostResponse createPost(PostCreateRequest request, Long memberId) {
         Post post = Post.builder()
-                .memberId(request.getMemberId())
+                .memberId(memberId)
                 .title(request.getTitle())
                 .departureLocation(request.getDepartureLocation())
                 .departureLat(request.getDepartureLat())

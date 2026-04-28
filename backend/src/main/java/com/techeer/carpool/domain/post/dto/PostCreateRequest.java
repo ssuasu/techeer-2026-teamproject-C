@@ -14,7 +14,6 @@ import java.util.List;
 @Builder
 public class PostCreateRequest {
 
-    private Long memberId;
     private String title;
     private String departureLocation;
     private Double departureLat;
