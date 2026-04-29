@@ -15,9 +15,12 @@ public class PostDeleteService {
     private final PostRepository postRepository;
 
     @Transactional
-    public void deletePost(Long id) {
+    public void deletePost(Long id, Long requesterId) {
         Post post = postRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
+        if (!post.getMemberId().equals(requesterId)) {
+            throw new CarpoolException(ErrorCode.POST_FORBIDDEN);
+        }
         post.delete();
     }
 }

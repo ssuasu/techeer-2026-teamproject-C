@@ -1,12 +1,15 @@
 package com.techeer.carpool.domain.post.entity;
 
 import com.techeer.carpool.domain.post.dto.PostUpdateRequest;
+import com.techeer.carpool.global.common.entity.SoftDeletableEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -14,7 +17,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Table(name = "posts")
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class Post {
+public class Post extends SoftDeletableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,27 +62,17 @@ public class Post {
     @Column(nullable = false)
     private boolean autoAccept;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Integer price;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(nullable = false)
-    private boolean deleted;
+    @ElementCollection
+    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "tag")
+    private List<String> tags = new ArrayList<>();
 
     @PrePersist
     private void prePersist() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
         this.status = PostStatus.OPEN;
         this.currentPassengers = 0;
-        this.deleted = false;
-    }
-
-    @PreUpdate
-    private void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 
     @Builder
@@ -87,7 +80,8 @@ public class Post {
                 String departureLocation, Double departureLat, Double departureLng,
                 String destinationLocation, Double destinationLat, Double destinationLng,
                 LocalDateTime departureTime, int maxPassengers,
-                String description, boolean autoAccept) {
+                String description, boolean autoAccept,
+                Integer price, List<String> tags) {
         this.memberId = memberId;
         this.title = title;
         this.departureLocation = departureLocation;
@@ -100,6 +94,8 @@ public class Post {
         this.maxPassengers = maxPassengers;
         this.description = description;
         this.autoAccept = autoAccept;
+        this.price = price;
+        this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
     }
 
     public void updateFrom(PostUpdateRequest request) {
@@ -115,9 +111,7 @@ public class Post {
         this.description = request.getDescription();
         this.autoAccept = request.isAutoAccept();
         this.status = request.getStatus();
-    }
-
-    public void delete() {
-        this.deleted = true;
+        this.price = request.getPrice();
+        this.tags = request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>();
     }
 }
