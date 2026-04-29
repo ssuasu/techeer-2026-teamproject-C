@@ -6,6 +6,8 @@ public enum ErrorCode {
 
     POST_NOT_FOUND("POST_001", "게시글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     POST_FORBIDDEN("POST_002", "게시글 수정/삭제 권한이 없습니다.", HttpStatus.FORBIDDEN),
+    COMMENT_NOT_FOUND("COMMENT_001", "댓글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COMMENT_FORBIDDEN("COMMENT_002", "댓글 삭제 권한이 없습니다.", HttpStatus.FORBIDDEN),
     INVALID_INPUT("COMMON_001", "잘못된 입력값입니다.", HttpStatus.BAD_REQUEST),
 
     EMAIL_DUPLICATE("AUTH_001", "이미 사용 중인 이메일입니다.", HttpStatus.CONFLICT),
