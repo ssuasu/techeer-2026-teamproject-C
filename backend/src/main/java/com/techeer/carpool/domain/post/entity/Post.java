@@ -98,6 +98,17 @@ public class Post extends SoftDeletableEntity {
         this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
     }
 
+    public boolean isFull() {
+        return this.currentPassengers >= this.maxPassengers;
+    }
+
+    public void incrementPassengers() {
+        this.currentPassengers++;
+        if (this.currentPassengers >= this.maxPassengers) {
+            this.status = PostStatus.CLOSED;
+        }
+    }
+
     public void updateFrom(PostUpdateRequest request) {
         this.title = request.getTitle();
         this.departureLocation = request.getDepartureLocation();
