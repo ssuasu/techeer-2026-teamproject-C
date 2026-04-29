@@ -69,15 +69,6 @@ public class Post extends SoftDeletableEntity {
     @Column(name = "tag")
     private List<String> tags = new ArrayList<>();
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(nullable = false)
-    private boolean deleted;
-
     @PrePersist
     private void prePersist() {
         this.status = PostStatus.OPEN;
