@@ -45,7 +45,11 @@ public class JwtTokenProvider {
     }
 
     public Long getMemberIdFromToken(String token) {
-        return getClaims(token).get("memberId", Long.class);
+        Object value = getClaims(token).get("memberId");
+        if (value instanceof Long) return (Long) value;
+        if (value instanceof Integer) return ((Integer) value).longValue();
+        if (value instanceof Number) return ((Number) value).longValue();
+        return null;
     }
 
     public LocalDateTime getRefreshTokenExpiresAt() {
