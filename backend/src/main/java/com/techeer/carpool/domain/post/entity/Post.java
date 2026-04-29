@@ -1,6 +1,7 @@
 package com.techeer.carpool.domain.post.entity;
 
 import com.techeer.carpool.domain.post.dto.PostUpdateRequest;
+import com.techeer.carpool.global.common.entity.SoftDeletableEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Table(name = "posts")
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class Post {
+public class Post extends SoftDeletableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -79,16 +80,8 @@ public class Post {
 
     @PrePersist
     private void prePersist() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
         this.status = PostStatus.OPEN;
         this.currentPassengers = 0;
-        this.deleted = false;
-    }
-
-    @PreUpdate
-    private void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 
     @Builder
@@ -129,9 +122,5 @@ public class Post {
         this.status = request.getStatus();
         this.price = request.getPrice();
         this.tags = request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>();
-    }
-
-    public void delete() {
-        this.deleted = true;
     }
 }
