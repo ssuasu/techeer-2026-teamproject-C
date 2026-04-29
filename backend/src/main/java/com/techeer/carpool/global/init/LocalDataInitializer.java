@@ -51,6 +51,7 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .maxPassengers(3)
                 .description("정시 출발합니다. 짐 많으신 분은 미리 말씀해 주세요.")
                 .autoAccept(false)
+                .price(5000)
                 .build());
 
         Post p2 = postRepository.save(Post.builder()
@@ -64,6 +65,7 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .maxPassengers(2)
                 .description("경유지 없이 직행입니다.")
                 .autoAccept(true)
+                .price(3000)
                 .build());
 
         Post p3 = postRepository.save(Post.builder()
@@ -77,6 +79,7 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .maxPassengers(4)
                 .description("반드시 제시간에 탑승 부탁드립니다.")
                 .autoAccept(false)
+                .price(4000)
                 .build());
 
         seedComments(p1, test, admin);
