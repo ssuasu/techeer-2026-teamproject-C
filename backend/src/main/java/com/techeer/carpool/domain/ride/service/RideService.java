@@ -5,7 +5,8 @@ import com.techeer.carpool.domain.ride.entity.Ride;
 import com.techeer.carpool.domain.ride.entity.RidePassenger;
 import com.techeer.carpool.domain.ride.repository.RidePassengerRepository;
 import com.techeer.carpool.domain.ride.repository.RideRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.techeer.carpool.global.exception.CarpoolException;
+import com.techeer.carpool.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,14 +102,11 @@ public class RideService {
     // rideId로 Ride 조회, 없으면 404 예외 발생
     private Ride findRideById(Long rideId) {
         return rideRepository.findById(rideId)
-                .orElseThrow(() -> new EntityNotFoundException("운행을 찾을 수 없습니다. id=" + rideId));
-        // Optional.orElseThrow(): 값이 있으면 반환, 없으면 예외 던짐
+                .orElseThrow(() -> new CarpoolException(ErrorCode.RIDE_NOT_FOUND));
     }
 
-    // rideId + applicationId로 RidePassenger 조회, 없으면 404 예외 발생
     private RidePassenger findPassenger(Long rideId, Long applicationId) {
         return ridePassengerRepository.findByRideIdAndApplicationId(rideId, applicationId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "탑승자를 찾을 수 없습니다. rideId=" + rideId + ", applicationId=" + applicationId));
+                .orElseThrow(() -> new CarpoolException(ErrorCode.RIDE_PASSENGER_NOT_FOUND));
     }
 }
