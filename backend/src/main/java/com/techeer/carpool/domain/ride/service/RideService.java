@@ -1,5 +1,8 @@
 package com.techeer.carpool.domain.ride.service;
 
+import com.techeer.carpool.domain.post.entity.Post;
+import com.techeer.carpool.domain.post.entity.PostStatus;
+import com.techeer.carpool.domain.post.repository.PostRepository;
 import com.techeer.carpool.domain.ride.dto.RideDto;
 import com.techeer.carpool.domain.ride.entity.Ride;
 import com.techeer.carpool.domain.ride.entity.RidePassenger;
@@ -24,16 +27,23 @@ public class RideService {
 
     private final RideRepository rideRepository;
     private final RidePassengerRepository ridePassengerRepository;
+    private final PostRepository postRepository;
 
     // 운행 생성
-    @Transactional  // 데이터 변경(INSERT)이 있으므로 readOnly=false인 트랜잭션으로 덮어씀
+    @Transactional
     public RideDto.RideResponse createRide(RideDto.CreateRequest request) {
-        // 요청 데이터로 Ride 엔티티 생성
+        Post post = postRepository.findByIdAndDeletedFalse(request.getPostId())
+                .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
+        if (!post.getMemberId().equals(request.getDriverId())) {
+            throw new CarpoolException(ErrorCode.RIDE_FORBIDDEN);
+        }
+        if (post.getStatus() != PostStatus.OPEN) {
+            throw new CarpoolException(ErrorCode.RIDE_INVALID_STATUS);
+        }
         Ride ride = Ride.builder()
                 .postId(request.getPostId())
                 .driverId(request.getDriverId())
                 .build();
-        // DB에 저장 후, 저장된 엔티티를 Response DTO로 변환해서 반환
         return RideDto.RideResponse.from(rideRepository.save(ride));
     }
 
