@@ -280,4 +280,134 @@ class ApplicationIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("APPLICATION_001"));
     }
+
+    // ── 수락/거절 취소 ───────────────────────────────────────
+
+    @Test
+    @DisplayName("수락 취소 성공 - 상태 PENDING 복구, currentPassengers 감소")
+    void cancelAccept_success() throws Exception {
+        MvcResult applyResult = mockMvc.perform(
+                post("/api/v1/posts/{postId}/applications", postId)
+                        .header("Authorization", applicant1Token))
+                .andReturn();
+        Long applicationId = ((Number) JsonPath.read(
+                applyResult.getResponse().getContentAsString(), "$.data.id")).longValue();
+
+        mockMvc.perform(patch("/api/v1/applications/{id}/accept", applicationId)
+                        .header("Authorization", ownerToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/api/v1/applications/{id}/cancel-accept", applicationId)
+                        .header("Authorization", ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("PENDING"));
+
+        mockMvc.perform(get("/api/v1/posts/{id}", postId)
+                        .header("Authorization", ownerToken))
+                .andExpect(jsonPath("$.data.currentPassengers").value(0));
+    }
+
+    @Test
+    @DisplayName("거절 취소 성공 - 상태 PENDING 복구")
+    void cancelReject_success() throws Exception {
+        MvcResult applyResult = mockMvc.perform(
+                post("/api/v1/posts/{postId}/applications", postId)
+                        .header("Authorization", applicant1Token))
+                .andReturn();
+        Long applicationId = ((Number) JsonPath.read(
+                applyResult.getResponse().getContentAsString(), "$.data.id")).longValue();
+
+        mockMvc.perform(patch("/api/v1/applications/{id}/reject", applicationId)
+                        .header("Authorization", ownerToken));
+
+        mockMvc.perform(patch("/api/v1/applications/{id}/cancel-reject", applicationId)
+                        .header("Authorization", ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("PENDING"));
+    }
+
+    @Test
+    @DisplayName("수락 취소 실패 - PENDING 상태에서 시도")
+    void cancelAccept_notAccepted() throws Exception {
+        MvcResult applyResult = mockMvc.perform(
+                post("/api/v1/posts/{postId}/applications", postId)
+                        .header("Authorization", applicant1Token))
+                .andReturn();
+        Long applicationId = ((Number) JsonPath.read(
+                applyResult.getResponse().getContentAsString(), "$.data.id")).longValue();
+
+        mockMvc.perform(patch("/api/v1/applications/{id}/cancel-accept", applicationId)
+                        .header("Authorization", ownerToken))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("APPLICATION_007"));
+    }
+
+    @Test
+    @DisplayName("거절 취소 실패 - PENDING 상태에서 시도")
+    void cancelReject_notRejected() throws Exception {
+        MvcResult applyResult = mockMvc.perform(
+                post("/api/v1/posts/{postId}/applications", postId)
+                        .header("Authorization", applicant1Token))
+                .andReturn();
+        Long applicationId = ((Number) JsonPath.read(
+                applyResult.getResponse().getContentAsString(), "$.data.id")).longValue();
+
+        mockMvc.perform(patch("/api/v1/applications/{id}/cancel-reject", applicationId)
+                        .header("Authorization", ownerToken))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("APPLICATION_008"));
+    }
+
+    @Test
+    @DisplayName("수락 취소 실패 - 권한 없음 (비작성자)")
+    void cancelAccept_forbidden() throws Exception {
+        MvcResult applyResult = mockMvc.perform(
+                post("/api/v1/posts/{postId}/applications", postId)
+                        .header("Authorization", applicant1Token))
+                .andReturn();
+        Long applicationId = ((Number) JsonPath.read(
+                applyResult.getResponse().getContentAsString(), "$.data.id")).longValue();
+
+        mockMvc.perform(patch("/api/v1/applications/{id}/accept", applicationId)
+                        .header("Authorization", ownerToken));
+
+        mockMvc.perform(patch("/api/v1/applications/{id}/cancel-accept", applicationId)
+                        .header("Authorization", applicant2Token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("APPLICATION_004"));
+    }
+
+    @Test
+    @DisplayName("수락 취소 성공 - CLOSED 게시글이 OPEN으로 복구")
+    void cancelAccept_reopensClosedPost() throws Exception {
+        Post smallPost = postRepository.save(Post.builder()
+                .memberId(ownerId)
+                .title("1인 카풀")
+                .departureLocation("강남역").departureLat(37.4979).departureLng(127.0276)
+                .destinationLocation("판교역").destinationLat(37.3943).destinationLng(127.1110)
+                .departureTime(LocalDateTime.now().plusDays(1))
+                .maxPassengers(1)
+                .autoAccept(false)
+                .build());
+        Long smallPostId = smallPost.getId();
+
+        MvcResult applyResult = mockMvc.perform(
+                post("/api/v1/posts/{postId}/applications", smallPostId)
+                        .header("Authorization", applicant1Token))
+                .andReturn();
+        Long applicationId = ((Number) JsonPath.read(
+                applyResult.getResponse().getContentAsString(), "$.data.id")).longValue();
+
+        mockMvc.perform(patch("/api/v1/applications/{id}/accept", applicationId)
+                        .header("Authorization", ownerToken));
+
+        mockMvc.perform(patch("/api/v1/applications/{id}/cancel-accept", applicationId)
+                        .header("Authorization", ownerToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/v1/posts/{id}", smallPostId)
+                        .header("Authorization", ownerToken))
+                .andExpect(jsonPath("$.data.status").value("OPEN"))
+                .andExpect(jsonPath("$.data.currentPassengers").value(0));
+    }
 }
