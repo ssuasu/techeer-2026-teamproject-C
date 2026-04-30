@@ -1,5 +1,7 @@
 package com.techeer.carpool.global.init;
 
+import com.techeer.carpool.domain.application.entity.Application;
+import com.techeer.carpool.domain.application.repository.ApplicationRepository;
 import com.techeer.carpool.domain.comment.entity.Comment;
 import com.techeer.carpool.domain.comment.repository.CommentRepository;
 import com.techeer.carpool.domain.member.entity.Member;
@@ -30,6 +32,7 @@ public class LocalDataInitializer implements CommandLineRunner {
 
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
+    private final ApplicationRepository applicationRepository;
     private final CommentRepository commentRepository;
     private final PasswordEncoder passwordEncoder;
     private final VehicleOptionRepository vehicleOptionRepository;
@@ -90,9 +93,66 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .price(4000)
                 .build());
 
+        // test 유저 소유 게시글 추가 (관리자가 신청할 대상)
+        Post p4 = postRepository.save(Post.builder()
+                .memberId(test.getId())
+                .title("잠실역 → 강남역")
+                .departureLocation("잠실역")
+                .departureLat(37.5134).departureLng(127.1000)
+                .destinationLocation("강남역")
+                .destinationLat(37.4979).destinationLng(127.0276)
+                .departureTime(LocalDateTime.now().plusDays(1).withHour(18).withMinute(0).withSecond(0).withNano(0))
+                .maxPassengers(3)
+                .description("퇴근길 카풀입니다. 편하게 연락 주세요.")
+                .autoAccept(false)
+                .price(3000)
+                .build());
+
+        Post p5 = postRepository.save(Post.builder()
+                .memberId(test.getId())
+                .title("신촌역 → 인천공항")
+                .departureLocation("신촌역")
+                .departureLat(37.5551).departureLng(126.9368)
+                .destinationLocation("인천공항 T1")
+                .destinationLat(37.4494).destinationLng(126.4508)
+                .departureTime(LocalDateTime.now().plusDays(4).withHour(5).withMinute(30).withSecond(0).withNano(0))
+                .maxPassengers(2)
+                .description("새벽 출발이라 짐 많으신 분도 환영합니다.")
+                .autoAccept(false)
+                .price(20000)
+                .build());
+
+        seedApplications(test, admin, p2, p4, p5);
+
         seedComments(p1, test, admin);
         seedComments(p2, admin, test);
         seedComments(p3, test, admin);
+    }
+
+    private void seedApplications(Member test, Member admin, Post p2, Post p4, Post p5) {
+        // 관리자 → p2 (홍대→여의도): PENDING — 테스트유저가 아직 처리 안 한 신청
+        applicationRepository.save(Application.builder()
+                .postId(p2.getId())
+                .applicantId(admin.getId())
+                .build());
+
+        // 관리자 → p4 (잠실→강남): ACCEPTED — 수락된 신청, currentPassengers 반영
+        Application acceptedApp = applicationRepository.save(Application.builder()
+                .postId(p4.getId())
+                .applicantId(admin.getId())
+                .build());
+        acceptedApp.accept();
+        applicationRepository.save(acceptedApp);
+        p4.incrementPassengers();
+        postRepository.save(p4);
+
+        // 관리자 → p5 (신촌→인천공항): REJECTED — 거절된 신청
+        Application rejectedApp = applicationRepository.save(Application.builder()
+                .postId(p5.getId())
+                .applicantId(admin.getId())
+                .build());
+        rejectedApp.reject();
+        applicationRepository.save(rejectedApp);
     }
 
     private void seedComments(Post post, Member first, Member second) {
