@@ -28,6 +28,20 @@ public class RideController {
                 .body(ApiResponse.of("운행이 생성되었습니다.", rideService.createRide(request, driverId)));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<List<RideResponse>>> getMyRidesAsDriver(
+            Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(ApiResponse.of("내 운행 목록 조회 성공", rideService.getMyRidesAsDriver(memberId)));
+    }
+
+    @GetMapping("/me/passenger")
+    public ResponseEntity<ApiResponse<List<RideResponse>>> getMyRidesAsPassenger(
+            Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(ApiResponse.of("내 탑승 내역 조회 성공", rideService.getMyRidesAsPassenger(memberId)));
+    }
+
     @GetMapping("/{rideId}")
     public ResponseEntity<ApiResponse<RideResponse>> getRide(@PathVariable Long rideId) {
         return ResponseEntity.ok(ApiResponse.of("운행 조회 성공", rideService.getRide(rideId)));
