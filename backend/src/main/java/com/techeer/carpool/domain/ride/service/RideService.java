@@ -34,6 +34,18 @@ public class RideService {
         return RideResponse.from(findRideById(rideId));
     }
 
+    public List<RideResponse> getMyRidesAsDriver(Long driverId) {
+        return rideRepository.findByDriverIdOrderByCreatedAtDesc(driverId).stream()
+                .map(RideResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    public List<RideResponse> getMyRidesAsPassenger(Long passengerId) {
+        return ridePassengerRepository.findByPassengerIdOrderByCreatedAtDesc(passengerId).stream()
+                .map(p -> RideResponse.from(p.getRide()))
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public RideResponse startRide(Long rideId, Long requesterId) {
         Ride ride = findRideById(rideId);
