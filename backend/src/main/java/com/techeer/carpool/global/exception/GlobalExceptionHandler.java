@@ -1,11 +1,13 @@
 package com.techeer.carpool.global.exception;
 
 import com.techeer.carpool.global.common.ErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -30,6 +32,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception e) {
+        log.error("Unhandled exception", e);
         return ResponseEntity
                 .internalServerError()
                 .body(new ErrorResponse("SERVER_ERROR", "서버 오류가 발생했습니다."));
