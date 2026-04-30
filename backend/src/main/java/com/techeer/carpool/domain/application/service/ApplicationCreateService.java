@@ -2,6 +2,7 @@ package com.techeer.carpool.domain.application.service;
 
 import com.techeer.carpool.domain.application.dto.ApplicationResponse;
 import com.techeer.carpool.domain.application.entity.Application;
+import com.techeer.carpool.domain.application.entity.ApplicationStatus;
 import com.techeer.carpool.domain.application.repository.ApplicationRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
@@ -42,6 +43,11 @@ public class ApplicationCreateService {
                 .postId(postId)
                 .applicantId(applicantId)
                 .build();
+
+        if (post.isAutoAccept()) {
+            application.accept();
+            post.incrementPassengers();
+        }
 
         Application saved = applicationRepository.save(application);
 
