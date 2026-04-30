@@ -6,6 +6,7 @@ import com.techeer.carpool.domain.post.repository.PostRepository;
 import com.techeer.carpool.domain.ride.dto.RideDto;
 import com.techeer.carpool.domain.ride.entity.Ride;
 import com.techeer.carpool.domain.ride.entity.RidePassenger;
+import com.techeer.carpool.domain.ride.entity.RideStatus;
 import com.techeer.carpool.domain.ride.repository.RidePassengerRepository;
 import com.techeer.carpool.domain.ride.repository.RideRepository;
 import com.techeer.carpool.global.exception.CarpoolException;
@@ -93,16 +94,24 @@ public class RideService {
     // 탑승 확인 (드라이버가 특정 탑승자의 탑승을 확인)
     @Transactional
     public RideDto.PassengerResponse boardPassenger(Long rideId, Long applicationId) {
+        Ride ride = findRideById(rideId);
+        if (ride.getStatus() != RideStatus.IN_PROGRESS) {
+            throw new CarpoolException(ErrorCode.RIDE_INVALID_STATUS);
+        }
         RidePassenger passenger = findPassenger(rideId, applicationId);
-        passenger.board();  // 상태를 BOARDED로 변경
+        passenger.board();
         return RideDto.PassengerResponse.from(passenger);
     }
 
     // 하차 확인 (드라이버가 특정 탑승자의 하차를 확인)
     @Transactional
     public RideDto.PassengerResponse dropOffPassenger(Long rideId, Long applicationId) {
+        Ride ride = findRideById(rideId);
+        if (ride.getStatus() != RideStatus.IN_PROGRESS) {
+            throw new CarpoolException(ErrorCode.RIDE_INVALID_STATUS);
+        }
         RidePassenger passenger = findPassenger(rideId, applicationId);
-        passenger.dropOff();  // 상태를 DROPPED_OFF로 변경
+        passenger.dropOff();
         return RideDto.PassengerResponse.from(passenger);
     }
 
