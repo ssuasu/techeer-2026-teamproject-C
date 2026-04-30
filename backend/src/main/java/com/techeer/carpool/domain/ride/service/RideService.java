@@ -1,11 +1,16 @@
 package com.techeer.carpool.domain.ride.service;
 
+import com.techeer.carpool.domain.post.entity.Post;
+import com.techeer.carpool.domain.post.entity.PostStatus;
+import com.techeer.carpool.domain.post.repository.PostRepository;
 import com.techeer.carpool.domain.ride.dto.RideDto;
 import com.techeer.carpool.domain.ride.entity.Ride;
 import com.techeer.carpool.domain.ride.entity.RidePassenger;
+import com.techeer.carpool.domain.ride.entity.RideStatus;
 import com.techeer.carpool.domain.ride.repository.RidePassengerRepository;
 import com.techeer.carpool.domain.ride.repository.RideRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.techeer.carpool.global.exception.CarpoolException;
+import com.techeer.carpool.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,16 +28,23 @@ public class RideService {
 
     private final RideRepository rideRepository;
     private final RidePassengerRepository ridePassengerRepository;
+    private final PostRepository postRepository;
 
     // 운행 생성
-    @Transactional  // 데이터 변경(INSERT)이 있으므로 readOnly=false인 트랜잭션으로 덮어씀
+    @Transactional
     public RideDto.RideResponse createRide(RideDto.CreateRequest request) {
-        // 요청 데이터로 Ride 엔티티 생성
+        Post post = postRepository.findByIdAndDeletedFalse(request.getPostId())
+                .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
+        if (!post.getMemberId().equals(request.getDriverId())) {
+            throw new CarpoolException(ErrorCode.RIDE_FORBIDDEN);
+        }
+        if (post.getStatus() != PostStatus.OPEN) {
+            throw new CarpoolException(ErrorCode.RIDE_INVALID_STATUS);
+        }
         Ride ride = Ride.builder()
                 .postId(request.getPostId())
                 .driverId(request.getDriverId())
                 .build();
-        // DB에 저장 후, 저장된 엔티티를 Response DTO로 변환해서 반환
         return RideDto.RideResponse.from(rideRepository.save(ride));
     }
 
@@ -82,16 +94,24 @@ public class RideService {
     // 탑승 확인 (드라이버가 특정 탑승자의 탑승을 확인)
     @Transactional
     public RideDto.PassengerResponse boardPassenger(Long rideId, Long applicationId) {
+        Ride ride = findRideById(rideId);
+        if (ride.getStatus() != RideStatus.IN_PROGRESS) {
+            throw new CarpoolException(ErrorCode.RIDE_INVALID_STATUS);
+        }
         RidePassenger passenger = findPassenger(rideId, applicationId);
-        passenger.board();  // 상태를 BOARDED로 변경
+        passenger.board();
         return RideDto.PassengerResponse.from(passenger);
     }
 
     // 하차 확인 (드라이버가 특정 탑승자의 하차를 확인)
     @Transactional
     public RideDto.PassengerResponse dropOffPassenger(Long rideId, Long applicationId) {
+        Ride ride = findRideById(rideId);
+        if (ride.getStatus() != RideStatus.IN_PROGRESS) {
+            throw new CarpoolException(ErrorCode.RIDE_INVALID_STATUS);
+        }
         RidePassenger passenger = findPassenger(rideId, applicationId);
-        passenger.dropOff();  // 상태를 DROPPED_OFF로 변경
+        passenger.dropOff();
         return RideDto.PassengerResponse.from(passenger);
     }
 
@@ -101,14 +121,11 @@ public class RideService {
     // rideId로 Ride 조회, 없으면 404 예외 발생
     private Ride findRideById(Long rideId) {
         return rideRepository.findById(rideId)
-                .orElseThrow(() -> new EntityNotFoundException("운행을 찾을 수 없습니다. id=" + rideId));
-        // Optional.orElseThrow(): 값이 있으면 반환, 없으면 예외 던짐
+                .orElseThrow(() -> new CarpoolException(ErrorCode.RIDE_NOT_FOUND));
     }
 
-    // rideId + applicationId로 RidePassenger 조회, 없으면 404 예외 발생
     private RidePassenger findPassenger(Long rideId, Long applicationId) {
         return ridePassengerRepository.findByRideIdAndApplicationId(rideId, applicationId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "탑승자를 찾을 수 없습니다. rideId=" + rideId + ", applicationId=" + applicationId));
+                .orElseThrow(() -> new CarpoolException(ErrorCode.RIDE_PASSENGER_NOT_FOUND));
     }
 }
