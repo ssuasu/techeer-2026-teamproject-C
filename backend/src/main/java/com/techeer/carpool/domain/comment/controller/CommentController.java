@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class CommentController {
 
@@ -23,7 +24,7 @@ public class CommentController {
     private final CommentReadService commentReadService;
     private final CommentDeleteService commentDeleteService;
 
-    @PostMapping("/api/v1/posts/{postId}/comments")
+    @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<ApiResponse<CommentResponse>> createComment(
             @PathVariable Long postId,
             @Valid @RequestBody CommentCreateRequest request,
@@ -33,12 +34,12 @@ public class CommentController {
                 .body(ApiResponse.of("댓글이 작성되었습니다.", commentCreateService.createComment(postId, request, memberId)));
     }
 
-    @GetMapping("/api/v1/posts/{postId}/comments")
+    @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<ApiResponse<List<CommentResponse>>> getComments(@PathVariable Long postId) {
         return ResponseEntity.ok(ApiResponse.of("댓글 목록 조회 성공", commentReadService.getCommentsByPostId(postId)));
     }
 
-    @DeleteMapping("/api/v1/comments/{commentId}")
+    @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<ApiResponse<Void>> deleteComment(
             @PathVariable Long commentId,
             Authentication authentication) {
