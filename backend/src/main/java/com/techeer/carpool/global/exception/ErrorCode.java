@@ -25,7 +25,9 @@ public enum ErrorCode {
     RIDE_NOT_FOUND("RIDE_001", "운행을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     RIDE_FORBIDDEN("RIDE_002", "운행 제어 권한이 없습니다.", HttpStatus.FORBIDDEN),
     RIDE_INVALID_STATUS("RIDE_003", "현재 상태에서 허용되지 않는 작업입니다.", HttpStatus.CONFLICT),
-    RIDE_PASSENGER_NOT_FOUND("RIDE_004", "탑승자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    RIDE_PASSENGER_NOT_FOUND("RIDE_004", "탑승자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
+    MEMBER_FORBIDDEN("MEMBER_001", "본인의 프로필만 조회할 수 있습니다.", HttpStatus.FORBIDDEN);
 
     private final String code;
     private final String message;
