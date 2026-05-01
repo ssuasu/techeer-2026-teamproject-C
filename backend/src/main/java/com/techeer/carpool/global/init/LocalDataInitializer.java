@@ -43,6 +43,7 @@ public class LocalDataInitializer implements CommandLineRunner {
             seedPosts(test, admin);
         }
 
+        initVehicleOptions();
         log.info("[LocalDataInitializer] 초기 데이터 생성 완료");
     }
 
