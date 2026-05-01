@@ -7,12 +7,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
 public class PostCreateRequest {
-
-    @NotBlank(message = "제목을 입력해주세요.")
     private String title;
 
     @NotBlank(message = "출발지를 입력해주세요.")
@@ -35,4 +34,6 @@ public class PostCreateRequest {
 
     private String description;
     private boolean autoAccept;
+    private Integer price;
+    private List<String> tags;
 }

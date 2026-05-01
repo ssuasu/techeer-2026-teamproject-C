@@ -18,15 +18,18 @@ public class MemberController {
     private final MemberProfileService memberProfileService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProfileResponse>> getProfileById(@PathVariable Long id) {
-        ProfileResponse profile = memberProfileService.getProfile(id);
+    public ResponseEntity<ApiResponse<ProfileResponse>> getProfileById(
+            @PathVariable Long id,
+            Authentication authentication) {
+        Long requesterId = (Long) authentication.getPrincipal();
+        ProfileResponse profile = memberProfileService.getProfile(requesterId, id);
         return ResponseEntity.ok(ApiResponse.of("프로필을 조회했습니다.", profile));
     }
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<ProfileResponse>> getProfile(Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
-        ProfileResponse profile = memberProfileService.getProfile(memberId);
+        ProfileResponse profile = memberProfileService.getProfile(memberId, memberId);
         return ResponseEntity.ok(ApiResponse.of("프로필을 조회했습니다.", profile));
     }
 
