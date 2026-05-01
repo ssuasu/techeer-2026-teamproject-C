@@ -60,6 +60,12 @@ public class Driver {
         this.carNumber = carNumber;
     }
 
+    public void update(Long carModelId, Long carColorId, String carNumber) {
+        this.carModelId = carModelId;
+        this.carColorId = carColorId;
+        this.carNumber = carNumber;
+    }
+
     public void softDelete() {
         this.deleted = true;
     }

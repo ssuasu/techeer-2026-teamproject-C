@@ -29,7 +29,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private static final String REFRESH_TOKEN_COOKIE = REFRESH_TOKEN_COOKIE;
+    private static final String REFRESH_TOKEN_COOKIE = "refreshToken";
 
     private final MemberSignupService memberSignupService;
     private final MemberLoginService memberLoginService;
