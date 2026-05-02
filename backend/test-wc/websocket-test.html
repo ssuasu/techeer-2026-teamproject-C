@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>실시간 위치 테스트</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 20px; max-width: 800px; }
+        .panel { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 8px; }
+        button { padding: 8px 16px; margin: 4px; cursor: pointer; }
+        input { padding: 6px; margin: 4px; width: 180px; }
+        #log { background: #f5f5f5; padding: 10px; border-radius: 4px; height: 300px; overflow-y: auto; font-family: monospace; font-size: 13px; }
+        .status { font-weight: bold; }
+        .connected { color: green; }
+        .disconnected { color: red; }
+        .msg-received { color: #0066cc; }
+        .msg-sent { color: #009900; }
+        #tokenDisplay { font-family: monospace; font-size: 11px; background: #eef; padding: 6px; border-radius: 4px; word-break: break-all; max-height: 60px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+<h2>실시간 위치 테스트</h2>
+
+<div class="panel">
+    <h3>0. 로그인</h3>
+    <p>
+        이메일: <input type="text" id="email" value="test@carpool.com">
+        비밀번호: <input type="password" id="password" value="password1234">
+    </p>
+    <button onclick="login()">로그인</button>
+    <p>토큰: <span id="tokenStatus">없음</span></p>
+    <div id="tokenDisplay"></div>
+</div>
+
+<div class="panel">
+    <h3>1. WebSocket 연결</h3>
+    <p>상태: <span id="status" class="status disconnected">연결 안 됨</span></p>
+    <button onclick="connect()">연결</button>
+    <button onclick="disconnect()">끊기</button>
+</div>
+
+<div class="panel">
+    <h3>1.5. 운행 준비 (테스트용)</h3>
+    <p style="color:#666; font-size: 13px;">테스트할 운행을 만들고 시작 상태로 변경합니다.</p>
+    <button onclick="createAndStartRide()">🚗 운행 생성 + 시작</button>
+    <p>현재 테스트 운행 ID: <span id="currentRideId" style="font-weight: bold;">없음</span></p>
+</div>
+
+<div class="panel">
+    <h3>2. 운행 구독 (탑승자 역할)</h3>
+    <p>구독할 운행 ID: <input type="number" id="subscribeRideId" value="1"></p>
+    <button onclick="subscribe()">구독</button>
+</div>
+
+<div class="panel">
+    <h3>3. 위치 업데이트 (운전자 역할)</h3>
+    <p>운행 ID: <input type="number" id="rideId" value="1"></p>
+    <p>
+        위도: <input type="number" id="lat" value="37.5665" step="0.0001" style="width:120px">
+        경도: <input type="number" id="lng" value="126.9780" step="0.0001" style="width:120px">
+    </p>
+    <button onclick="getCurrentGPS()">📍 내 GPS 위치 가져오기</button>
+    <button onclick="updateLocation()">위치 업데이트 (REST)</button>
+    <br>
+    <button onclick="startGPSTracking()" style="background: #009900; color: white;">🚗 GPS 자동 전송 시작</button>
+    <button onclick="stopGPSTracking()" style="background: #cc0000; color: white;">⏹ 자동 전송 멈춤</button>
+</div>
+
+<div class="panel">
+    <h3>로그</h3>
+    <div id="log"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<script>
+    let stompClient = null;
+    let accessToken = null;
+    let watchId = null;
+
+    function log(msg, className = '') {
+        const logDiv = document.getElementById('log');
+        const time = new Date().toLocaleTimeString();
+        logDiv.innerHTML += `<div class="${className}">[${time}] ${msg}</div>`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    // ===== 로그인 =====
+    function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        fetch('http://localhost:8080/api/v1/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, password })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('로그인 실패 (HTTP ' + res.status + ')');
+                return res.json();
+            })
+            .then(data => {
+                accessToken = data.data && data.data.accessToken;
+                if (!accessToken) {
+                    log('❌ 응답에서 토큰을 찾을 수 없음: ' + JSON.stringify(data));
+                    return;
+                }
+                document.getElementById('tokenStatus').textContent = '발급됨 ✓';
+                document.getElementById('tokenStatus').style.color = 'green';
+                document.getElementById('tokenDisplay').textContent = accessToken;
+                log('✅ 로그인 성공');
+            })
+            .catch(err => {
+                log('❌ 로그인 에러: ' + err.message);
+            });
+    }
+
+    // ===== WebSocket 연결 (토큰 포함) =====
+    function connect() {
+        if (!accessToken) {
+            alert('먼저 로그인하세요.');
+            return;
+        }
+
+        const socket = new SockJS('http://localhost:8080/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+
+        const headers = { 'Authorization': 'Bearer ' + accessToken };
+
+        stompClient.connect(headers, function () {
+            document.getElementById('status').textContent = '연결됨';
+            document.getElementById('status').className = 'status connected';
+            log('✅ WebSocket 연결 성공');
+        }, function (error) {
+            log('❌ 연결 실패: ' + (error.headers ? error.headers.message : error));
+        });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+            stompClient = null;
+            document.getElementById('status').textContent = '연결 안 됨';
+            document.getElementById('status').className = 'status disconnected';
+            log('🔌 연결 끊김');
+        }
+    }
+
+    // ===== 운행 생성 + 시작 (테스트용) =====
+    async function createAndStartRide() {
+        if (!accessToken) {
+            alert('먼저 로그인하세요.');
+            return;
+        }
+
+        try {
+            // 1) 운행 생성
+            log('🚗 운행 생성 중...');
+            const createRes = await fetch('http://localhost:8080/api/v1/rides', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + accessToken
+                },
+                body: JSON.stringify({ postId: 1, driverId: 1 })
+            });
+
+            if (!createRes.ok) throw new Error('운행 생성 실패: HTTP ' + createRes.status);
+            const ride = await createRes.json();
+            const rideId = ride.id;
+            log(`✅ 운행 생성됨 (ID: ${rideId})`);
+
+            // 2) 운행 시작
+            log(`▶️ 운행 ${rideId} 시작 중...`);
+            const startRes = await fetch(`http://localhost:8080/api/v1/rides/${rideId}/start`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+
+            if (!startRes.ok) throw new Error('운행 시작 실패: HTTP ' + startRes.status);
+            const started = await startRes.json();
+            log(`✅ 운행 시작됨 (상태: ${started.status})`);
+
+            // 3) 화면의 모든 ride ID 입력칸을 자동으로 채워줌
+            document.getElementById('subscribeRideId').value = rideId;
+            document.getElementById('rideId').value = rideId;
+            document.getElementById('currentRideId').textContent = rideId;
+
+            log(`💡 위/아래 운행 ID가 ${rideId}로 자동 설정됨`);
+        } catch (err) {
+            log('❌ 운행 준비 에러: ' + err.message);
+        }
+    }
+
+    function subscribe() {
+        if (!stompClient) {
+            alert('먼저 WebSocket에 연결하세요.');
+            return;
+        }
+        const rideId = document.getElementById('subscribeRideId').value;
+        const topic = `/topic/rides/${rideId}`;
+
+        stompClient.subscribe(topic, function (message) {
+            const body = JSON.parse(message.body);
+            log(`📍 위치 수신: ${JSON.stringify(body)}`, 'msg-received');
+        });
+
+        log(`👀 구독 시작: ${topic}`);
+    }
+
+    // ===== REST 위치 업데이트 (토큰 포함) =====
+    function updateLocation() {
+        if (!accessToken) {
+            alert('먼저 로그인하세요.');
+            return;
+        }
+
+        const rideId = document.getElementById('rideId').value;
+        const lat = parseFloat(document.getElementById('lat').value);
+        const lng = parseFloat(document.getElementById('lng').value);
+
+        fetch(`http://localhost:8080/api/v1/rides/${rideId}/location`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + accessToken
+            },
+            body: JSON.stringify({ latitude: lat, longitude: lng })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(data => {
+                log(`✉️ REST 응답: ${JSON.stringify(data)}`, 'msg-sent');
+            })
+            .catch(err => {
+                log('❌ REST 에러: ' + err.message);
+            });
+    }
+
+    // ===== GPS =====
+    function getCurrentGPS() {
+        if (!navigator.geolocation) {
+            log('이 브라우저는 GPS를 지원하지 않습니다.');
+            return;
+        }
+        log('GPS 위치 가져오는 중...');
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                document.getElementById('lat').value = lat.toFixed(6);
+                document.getElementById('lng').value = lng.toFixed(6);
+                log(`📍 GPS 위치 획득: ${lat.toFixed(6)}, ${lng.toFixed(6)} (정확도: ${position.coords.accuracy.toFixed(0)}m)`);
+            },
+            function (error) {
+                log('❌ GPS 에러: ' + error.message);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    }
+
+    function startGPSTracking() {
+        if (watchId !== null) {
+            log('이미 GPS 추적 중입니다.');
+            return;
+        }
+        if (!navigator.geolocation) {
+            log('이 브라우저는 GPS를 지원하지 않습니다.');
+            return;
+        }
+        log('🚗 GPS 자동 추적 시작');
+        watchId = navigator.geolocation.watchPosition(
+            function (position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                document.getElementById('lat').value = lat.toFixed(6);
+                document.getElementById('lng').value = lng.toFixed(6);
+                log(`📍 GPS 위치 변경 감지: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+                updateLocation();
+            },
+            function (error) {
+                log('❌ GPS 추적 에러: ' + error.message);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
+        );
+    }
+
+    function stopGPSTracking() {
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+            log('⏹ GPS 자동 추적 중단');
+        } else {
+            log('GPS 추적 중이 아닙니다.');
+        }
+    }
+</script>
+</body>
+</html>
