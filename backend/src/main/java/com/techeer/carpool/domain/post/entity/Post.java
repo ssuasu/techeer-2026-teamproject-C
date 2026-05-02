@@ -109,6 +109,15 @@ public class Post extends SoftDeletableEntity {
         }
     }
 
+    public void decrementPassengers() {
+        if (this.currentPassengers > 0) {
+            this.currentPassengers--;
+        }
+        if (this.status == PostStatus.CLOSED && this.currentPassengers < this.maxPassengers) {
+            this.status = PostStatus.OPEN;
+        }
+    }
+
     public void updateFrom(PostUpdateRequest request) {
         this.title = request.getTitle();
         this.departureLocation = request.getDepartureLocation();

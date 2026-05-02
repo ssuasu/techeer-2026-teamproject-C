@@ -14,6 +14,8 @@ public enum ErrorCode {
     APPLICATION_FORBIDDEN("APPLICATION_004", "신청 수락/거절 권한이 없습니다.", HttpStatus.FORBIDDEN),
     APPLICATION_POST_FULL("APPLICATION_005", "정원이 가득 찬 게시글입니다.", HttpStatus.CONFLICT),
     APPLICATION_ALREADY_PROCESSED("APPLICATION_006", "이미 처리된 신청입니다.", HttpStatus.CONFLICT),
+    APPLICATION_NOT_ACCEPTED("APPLICATION_007", "수락된 신청이 아닙니다.", HttpStatus.CONFLICT),
+    APPLICATION_NOT_REJECTED("APPLICATION_008", "거절된 신청이 아닙니다.", HttpStatus.CONFLICT),
     INVALID_INPUT("COMMON_001", "잘못된 입력값입니다.", HttpStatus.BAD_REQUEST),
 
     EMAIL_DUPLICATE("AUTH_001", "이미 사용 중인 이메일입니다.", HttpStatus.CONFLICT),
