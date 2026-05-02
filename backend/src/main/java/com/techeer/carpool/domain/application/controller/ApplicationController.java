@@ -22,7 +22,7 @@ public class ApplicationController {
     private final ApplicationReadService applicationReadService;
     private final ApplicationStatusService applicationStatusService;
 
-    @PostMapping("/posts/{postId}/applications")
+    @PostMapping("/posts/{postId}/apply")
     public ResponseEntity<ApiResponse<ApplicationResponse>> apply(
             @PathVariable Long postId,
             Authentication authentication) {
@@ -31,14 +31,22 @@ public class ApplicationController {
                 .body(ApiResponse.of("카풀 신청이 완료되었습니다.", applicationCreateService.apply(postId, memberId)));
     }
 
-    @GetMapping("/applications/me")
+    @GetMapping("/applies/me")
     public ResponseEntity<ApiResponse<List<ApplicationResponse>>> getMyApplications(
             Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(ApiResponse.of("내 신청 내역 조회 성공", applicationReadService.getMyApplications(memberId)));
     }
 
-    @GetMapping("/posts/{postId}/applications")
+    @GetMapping("/applies/{applyId}")
+    public ResponseEntity<ApiResponse<ApplicationResponse>> getApplication(
+            @PathVariable Long applyId,
+            Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(ApiResponse.of("신청 현황 조회 성공", applicationReadService.getApplication(applyId, memberId)));
+    }
+
+    @GetMapping("/posts/{postId}/applies")
     public ResponseEntity<ApiResponse<List<ApplicationResponse>>> getApplicationsByPost(
             @PathVariable Long postId,
             Authentication authentication) {
@@ -46,7 +54,7 @@ public class ApplicationController {
         return ResponseEntity.ok(ApiResponse.of("신청 목록 조회 성공", applicationReadService.getApplicationsByPost(postId, memberId)));
     }
 
-    @PatchMapping("/applications/{id}/accept")
+    @PatchMapping("/applies/{id}/accept")
     public ResponseEntity<ApiResponse<ApplicationResponse>> accept(
             @PathVariable Long id,
             Authentication authentication) {
@@ -54,7 +62,7 @@ public class ApplicationController {
         return ResponseEntity.ok(ApiResponse.of("신청을 수락했습니다.", applicationStatusService.accept(id, memberId)));
     }
 
-    @PatchMapping("/applications/{id}/reject")
+    @PatchMapping("/applies/{id}/reject")
     public ResponseEntity<ApiResponse<ApplicationResponse>> reject(
             @PathVariable Long id,
             Authentication authentication) {
@@ -62,7 +70,7 @@ public class ApplicationController {
         return ResponseEntity.ok(ApiResponse.of("신청을 거절했습니다.", applicationStatusService.reject(id, memberId)));
     }
 
-    @PatchMapping("/applications/{id}/cancel-accept")
+    @PatchMapping("/applies/{id}/cancel-accept")
     public ResponseEntity<ApiResponse<ApplicationResponse>> cancelAccept(
             @PathVariable Long id,
             Authentication authentication) {
@@ -70,7 +78,7 @@ public class ApplicationController {
         return ResponseEntity.ok(ApiResponse.of("수락을 취소했습니다.", applicationStatusService.cancelAccept(id, memberId)));
     }
 
-    @PatchMapping("/applications/{id}/cancel-reject")
+    @PatchMapping("/applies/{id}/cancel-reject")
     public ResponseEntity<ApiResponse<ApplicationResponse>> cancelReject(
             @PathVariable Long id,
             Authentication authentication) {
