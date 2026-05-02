@@ -14,6 +14,8 @@ public enum ErrorCode {
     APPLICATION_FORBIDDEN("APPLICATION_004", "신청 수락/거절 권한이 없습니다.", HttpStatus.FORBIDDEN),
     APPLICATION_POST_FULL("APPLICATION_005", "정원이 가득 찬 게시글입니다.", HttpStatus.CONFLICT),
     APPLICATION_ALREADY_PROCESSED("APPLICATION_006", "이미 처리된 신청입니다.", HttpStatus.CONFLICT),
+    APPLICATION_NOT_ACCEPTED("APPLICATION_007", "수락된 신청이 아닙니다.", HttpStatus.CONFLICT),
+    APPLICATION_NOT_REJECTED("APPLICATION_008", "거절된 신청이 아닙니다.", HttpStatus.CONFLICT),
     INVALID_INPUT("COMMON_001", "잘못된 입력값입니다.", HttpStatus.BAD_REQUEST),
 
     EMAIL_DUPLICATE("AUTH_001", "이미 사용 중인 이메일입니다.", HttpStatus.CONFLICT),
@@ -22,12 +24,18 @@ public enum ErrorCode {
     INVALID_TOKEN("AUTH_004", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED),
     EXPIRED_TOKEN("AUTH_005", "만료된 토큰입니다.", HttpStatus.UNAUTHORIZED),
 
+
+    DRIVER_ALREADY_REGISTERED("DRIVER_001", "이미 운전자로 등록되어 있습니다.", HttpStatus.CONFLICT),
+    VEHICLE_OPTION_NOT_FOUND("DRIVER_002", "차량 옵션을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    CAR_NUMBER_DUPLICATE("DRIVER_004", "이미 등록된 차량 번호입니다.", HttpStatus.CONFLICT),
+    DRIVER_NOT_FOUND("DRIVER_005", "운전자 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     RIDE_NOT_FOUND("RIDE_001", "운행을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     RIDE_FORBIDDEN("RIDE_002", "운행 제어 권한이 없습니다.", HttpStatus.FORBIDDEN),
     RIDE_INVALID_STATUS("RIDE_003", "현재 상태에서 허용되지 않는 작업입니다.", HttpStatus.CONFLICT),
     RIDE_PASSENGER_NOT_FOUND("RIDE_004", "탑승자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     MEMBER_FORBIDDEN("MEMBER_001", "본인의 프로필만 조회할 수 있습니다.", HttpStatus.FORBIDDEN);
+
 
     private final String code;
     private final String message;

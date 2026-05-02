@@ -58,6 +58,49 @@ public class ApplicationStatusService {
         return toResponse(application);
     }
 
+    @Transactional
+    public ApplicationResponse cancelAccept(Long applicationId, Long requesterId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CarpoolException(ErrorCode.APPLICATION_NOT_FOUND));
+
+        if (application.getStatus() != ApplicationStatus.ACCEPTED) {
+            throw new CarpoolException(ErrorCode.APPLICATION_NOT_ACCEPTED);
+        }
+
+        Post post = postRepository.findByIdAndDeletedFalse(application.getPostId())
+                .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
+
+        if (!post.getMemberId().equals(requesterId)) {
+            throw new CarpoolException(ErrorCode.APPLICATION_FORBIDDEN);
+        }
+
+        application.resetToPending();
+        post.decrementPassengers();
+
+        return toResponse(application);
+    }
+
+    @Transactional
+    public ApplicationResponse cancelReject(Long applicationId, Long requesterId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CarpoolException(ErrorCode.APPLICATION_NOT_FOUND));
+
+        if (application.getStatus() != ApplicationStatus.REJECTED) {
+            throw new CarpoolException(ErrorCode.APPLICATION_NOT_REJECTED);
+        }
+
+        Post post = postRepository.findByIdAndDeletedFalse(application.getPostId())
+                .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
+
+        if (!post.getMemberId().equals(requesterId)) {
+            throw new CarpoolException(ErrorCode.APPLICATION_FORBIDDEN);
+        }
+
+        application.resetToPending();
+
+        return toResponse(application);
+    }
+
     private Application findPending(Long applicationId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new CarpoolException(ErrorCode.APPLICATION_NOT_FOUND));

@@ -22,6 +22,7 @@ public class MemberProfileService {
         if (!requesterId.equals(memberId)) {
             throw new CarpoolException(ErrorCode.MEMBER_FORBIDDEN);
         }
+
         Member member = memberRepository.findByIdAndDeletedFalse(memberId)
                 .orElseThrow(() -> new CarpoolException(ErrorCode.MEMBER_NOT_FOUND));
         return ProfileResponse.from(member);

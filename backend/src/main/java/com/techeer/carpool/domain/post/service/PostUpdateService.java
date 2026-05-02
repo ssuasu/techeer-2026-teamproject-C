@@ -5,6 +5,7 @@ import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.domain.post.dto.PostResponse;
 import com.techeer.carpool.domain.post.dto.PostUpdateRequest;
 import com.techeer.carpool.domain.post.entity.Post;
+import com.techeer.carpool.domain.post.entity.PostUpdateCommand;
 import com.techeer.carpool.domain.post.repository.PostRepository;
 import com.techeer.carpool.global.exception.CarpoolException;
 import com.techeer.carpool.global.exception.ErrorCode;
@@ -26,7 +27,22 @@ public class PostUpdateService {
         if (!post.getMemberId().equals(requesterId)) {
             throw new CarpoolException(ErrorCode.POST_FORBIDDEN);
         }
-        post.updateFrom(request);
+        post.updateFrom(new PostUpdateCommand(
+                request.getTitle(),
+                request.getDepartureLocation(),
+                request.getDepartureLat(),
+                request.getDepartureLng(),
+                request.getDestinationLocation(),
+                request.getDestinationLat(),
+                request.getDestinationLng(),
+                request.getDepartureTime(),
+                request.getMaxPassengers(),
+                request.getDescription(),
+                request.isAutoAccept(),
+                request.getStatus(),
+                request.getPrice(),
+                request.getTags()
+        ));
         String nickname = memberRepository.findById(post.getMemberId())
                 .map(Member::getNickname)
                 .orElse("알 수 없음");

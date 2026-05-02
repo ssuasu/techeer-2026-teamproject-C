@@ -1,6 +1,5 @@
 package com.techeer.carpool.domain.post.entity;
 
-import com.techeer.carpool.domain.post.dto.PostUpdateRequest;
 import com.techeer.carpool.global.common.entity.SoftDeletableEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -109,20 +108,29 @@ public class Post extends SoftDeletableEntity {
         }
     }
 
-    public void updateFrom(PostUpdateRequest request) {
-        this.title = request.getTitle();
-        this.departureLocation = request.getDepartureLocation();
-        this.departureLat = request.getDepartureLat();
-        this.departureLng = request.getDepartureLng();
-        this.destinationLocation = request.getDestinationLocation();
-        this.destinationLat = request.getDestinationLat();
-        this.destinationLng = request.getDestinationLng();
-        this.departureTime = request.getDepartureTime();
-        this.maxPassengers = request.getMaxPassengers();
-        this.description = request.getDescription();
-        this.autoAccept = request.isAutoAccept();
-        this.status = request.getStatus();
-        this.price = request.getPrice();
-        this.tags = request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>();
+    public void decrementPassengers() {
+        if (this.currentPassengers > 0) {
+            this.currentPassengers--;
+        }
+        if (this.status == PostStatus.CLOSED && this.currentPassengers < this.maxPassengers) {
+            this.status = PostStatus.OPEN;
+        }
+    }
+
+    public void updateFrom(PostUpdateCommand command) {
+        this.title = command.title();
+        this.departureLocation = command.departureLocation();
+        this.departureLat = command.departureLat();
+        this.departureLng = command.departureLng();
+        this.destinationLocation = command.destinationLocation();
+        this.destinationLat = command.destinationLat();
+        this.destinationLng = command.destinationLng();
+        this.departureTime = command.departureTime();
+        this.maxPassengers = command.maxPassengers();
+        this.description = command.description();
+        this.autoAccept = command.autoAccept();
+        this.status = command.status();
+        this.price = command.price();
+        this.tags = command.tags() != null ? new ArrayList<>(command.tags()) : new ArrayList<>();
     }
 }
