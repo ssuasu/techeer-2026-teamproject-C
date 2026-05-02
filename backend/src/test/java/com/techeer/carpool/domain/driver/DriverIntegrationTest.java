@@ -184,6 +184,93 @@ class DriverIntegrationTest {
                 .andExpect(jsonPath("$.code").value("DRIVER_005"));
     }
 
+    @Test
+    void registerDriver_carNumberDuplicate_returns409() throws Exception {
+        registerDriver("12가3456");
+
+        memberRepository.save(Member.builder()
+                .email("driver2@test.com")
+                .password(passwordEncoder.encode("password123"))
+                .nickname("테스트드라이버2")
+                .build());
+
+        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "email", "driver2@test.com",
+                                "password", "password123"
+                        ))))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String secondToken = objectMapper.readTree(loginResult.getResponse().getContentAsString())
+                .at("/data/accessToken").asText();
+
+        mockMvc.perform(post("/api/v1/drivers")
+                        .header("Authorization", "Bearer " + secondToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "carModelId", carModelId,
+                                "carColorId", carColorId,
+                                "carNumber", "12가3456"
+                        ))))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("DRIVER_004"));
+    }
+
+    @Test
+    void registerDriver_invalidCarModelId_returns404() throws Exception {
+        mockMvc.perform(post("/api/v1/drivers")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "carModelId", 9999L,
+                                "carColorId", carColorId,
+                                "carNumber", "12가3456"
+                        ))))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("DRIVER_002"));
+    }
+
+    @Test
+    void registerDriver_invalidCarColorId_returns404() throws Exception {
+        mockMvc.perform(post("/api/v1/drivers")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "carModelId", carModelId,
+                                "carColorId", 9999L,
+                                "carNumber", "12가3456"
+                        ))))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("DRIVER_003"));
+    }
+
+    @Test
+    void registerDriver_missingCarNumber_returns400() throws Exception {
+        mockMvc.perform(post("/api/v1/drivers")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "carModelId", carModelId,
+                                "carColorId", carColorId
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("COMMON_001"));
+    }
+
+    @Test
+    void registerDriver_unauthorized_returns401() throws Exception {
+        mockMvc.perform(post("/api/v1/drivers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "carModelId", carModelId,
+                                "carColorId", carColorId,
+                                "carNumber", "12가3456"
+                        ))))
+                .andExpect(status().isUnauthorized());
+    }
+
     private void registerDriver(String carNumber) throws Exception {
         mockMvc.perform(post("/api/v1/drivers")
                         .header("Authorization", "Bearer " + accessToken)
