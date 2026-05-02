@@ -62,7 +62,7 @@ public class ApplicationController {
         return ResponseEntity.ok(ApiResponse.of("신청을 거절했습니다.", applicationStatusService.reject(id, memberId)));
     }
 
-    @PatchMapping("/api/v1/applications/{id}/cancel-accept")
+    @PatchMapping("/applications/{id}/cancel-accept")
     public ResponseEntity<ApiResponse<ApplicationResponse>> cancelAccept(
             @PathVariable Long id,
             Authentication authentication) {
@@ -70,7 +70,7 @@ public class ApplicationController {
         return ResponseEntity.ok(ApiResponse.of("수락을 취소했습니다.", applicationStatusService.cancelAccept(id, memberId)));
     }
 
-    @PatchMapping("/api/v1/applications/{id}/cancel-reject")
+    @PatchMapping("/applications/{id}/cancel-reject")
     public ResponseEntity<ApiResponse<ApplicationResponse>> cancelReject(
             @PathVariable Long id,
             Authentication authentication) {
