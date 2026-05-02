@@ -7,6 +7,7 @@ import com.techeer.carpool.domain.ride.repository.RidePassengerRepository;
 import com.techeer.carpool.domain.ride.repository.RideRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class RideService {
 
     private final RideRepository rideRepository;
     private final RidePassengerRepository ridePassengerRepository;
+    private final SimpMessagingTemplate messagingTemplate;  // WebSocket 메시지 발송
 
     // 운행 생성
     @Transactional  // 데이터 변경(INSERT)이 있으므로 readOnly=false인 트랜잭션으로 덮어씀
@@ -63,7 +65,12 @@ public class RideService {
     public RideDto.LocationResponse updateLocation(Long rideId, RideDto.LocationUpdateRequest request) {
         Ride ride = findRideById(rideId);
         ride.updateLocation(request.getLatitude(), request.getLongitude());  // 위도/경도 갱신
-        return RideDto.LocationResponse.from(ride);
+
+        // Websocket 브로드캐스트
+        RideDto.LocationResponse response = RideDto.LocationResponse.from(ride);
+        messagingTemplate.convertAndSend("/topic/rides/" + rideId, response);
+
+        return response;
     }
 
     // 현재 위치 조회 (탑승자가 드라이버 위치를 확인할 때 사용)
