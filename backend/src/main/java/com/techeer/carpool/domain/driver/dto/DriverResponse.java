@@ -1,6 +1,7 @@
 package com.techeer.carpool.domain.driver.dto;
 
 import com.techeer.carpool.domain.driver.entity.Driver;
+import com.techeer.carpool.domain.vehicle.entity.CarColor;
 import com.techeer.carpool.domain.vehicle.entity.VehicleOption;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,21 +14,23 @@ public class DriverResponse {
 
     private Long driverId;
     private Long memberId;
-    private String carModelBrand;
-    private String carModelName;
-    private String carColorName;
-    private String carColorHexCode;
+    private String brand;
+    private String model;
+    private CarColor color;
+    private String colorLabel;
+    private String colorHexCode;
     private String carNumber;
     private LocalDateTime createdAt;
 
-    public static DriverResponse from(Driver driver, VehicleOption carModel, VehicleOption carColor) {
+    public static DriverResponse from(Driver driver, VehicleOption vehicleOption) {
         return DriverResponse.builder()
                 .driverId(driver.getDriverId())
                 .memberId(driver.getMemberId())
-                .carModelBrand(carModel.getBrand())
-                .carModelName(carModel.getName())
-                .carColorName(carColor.getName())
-                .carColorHexCode(carColor.getHexCode())
+                .brand(vehicleOption.getBrand())
+                .model(vehicleOption.getModel())
+                .color(vehicleOption.getColor())
+                .colorLabel(vehicleOption.getColor().getLabel())
+                .colorHexCode(vehicleOption.getColor().getHexCode())
                 .carNumber(driver.getCarNumber())
                 .createdAt(driver.getCreatedAt())
                 .build();

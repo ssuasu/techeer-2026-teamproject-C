@@ -23,11 +23,9 @@ public class DriverReadService {
         Driver driver = driverRepository.findByMemberIdAndDeletedFalse(memberId)
                 .orElseThrow(() -> new CarpoolException(ErrorCode.DRIVER_NOT_FOUND));
 
-        VehicleOption carModel = vehicleOptionRepository.findById(driver.getCarModelId())
-                .orElseThrow(() -> new CarpoolException(ErrorCode.CAR_MODEL_NOT_FOUND));
-        VehicleOption carColor = vehicleOptionRepository.findById(driver.getCarColorId())
-                .orElseThrow(() -> new CarpoolException(ErrorCode.CAR_COLOR_NOT_FOUND));
+        VehicleOption vehicleOption = vehicleOptionRepository.findById(driver.getVehicleOptionId())
+                .orElseThrow(() -> new CarpoolException(ErrorCode.VEHICLE_OPTION_NOT_FOUND));
 
-        return DriverResponse.from(driver, carModel, carColor);
+        return DriverResponse.from(driver, vehicleOption);
     }
 }

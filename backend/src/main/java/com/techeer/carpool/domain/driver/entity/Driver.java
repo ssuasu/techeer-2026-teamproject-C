@@ -23,10 +23,7 @@ public class Driver {
     private Long memberId;
 
     @Column(nullable = false)
-    private Long carModelId;
-
-    @Column(nullable = false)
-    private Long carColorId;
+    private Long vehicleOptionId;
 
     @Column(nullable = false, unique = true, length = 20)
     private String carNumber;
@@ -53,16 +50,14 @@ public class Driver {
     }
 
     @Builder
-    public Driver(Long memberId, Long carModelId, Long carColorId, String carNumber) {
+    public Driver(Long memberId, Long vehicleOptionId, String carNumber) {
         this.memberId = memberId;
-        this.carModelId = carModelId;
-        this.carColorId = carColorId;
+        this.vehicleOptionId = vehicleOptionId;
         this.carNumber = carNumber;
     }
 
-    public void update(Long carModelId, Long carColorId, String carNumber) {
-        this.carModelId = carModelId;
-        this.carColorId = carColorId;
+    public void update(Long vehicleOptionId, String carNumber) {
+        this.vehicleOptionId = vehicleOptionId;
         this.carNumber = carNumber;
     }
 

@@ -19,18 +19,15 @@ public class VehicleOption {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    private VehicleOptionType type;
-
-    @Column(length = 50)
+    @Column(nullable = false, length = 50)
     private String brand;
 
     @Column(nullable = false, length = 50)
-    private String name;
+    private String model;
 
-    @Column(length = 7)
-    private String hexCode;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private CarColor color;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -41,10 +38,9 @@ public class VehicleOption {
     }
 
     @Builder
-    public VehicleOption(VehicleOptionType type, String brand, String name, String hexCode) {
-        this.type = type;
+    public VehicleOption(String brand, String model, CarColor color) {
         this.brand = brand;
-        this.name = name;
-        this.hexCode = hexCode;
+        this.model = model;
+        this.color = color;
     }
 }

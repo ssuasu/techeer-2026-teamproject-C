@@ -7,11 +7,8 @@ import lombok.Getter;
 @Getter
 public class DriverUpdateRequest {
 
-    @NotNull(message = "차량 모델을 선택해주세요.")
-    private Long carModelId;
-
-    @NotNull(message = "차량 색상을 선택해주세요.")
-    private Long carColorId;
+    @NotNull(message = "차량을 선택해주세요.")
+    private Long vehicleOptionId;
 
     @NotBlank(message = "차량 번호를 입력해주세요.")
     private String carNumber;
