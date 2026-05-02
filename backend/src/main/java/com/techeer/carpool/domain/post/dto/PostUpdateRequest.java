@@ -1,8 +1,6 @@
 package com.techeer.carpool.domain.post.dto;
 
 import com.techeer.carpool.domain.post.entity.PostStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,8 +9,6 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class PostUpdateRequest {
 
     private String title;

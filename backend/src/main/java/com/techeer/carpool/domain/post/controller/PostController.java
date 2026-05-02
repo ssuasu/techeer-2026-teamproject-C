@@ -8,6 +8,7 @@ import com.techeer.carpool.domain.post.service.PostDeleteService;
 import com.techeer.carpool.domain.post.service.PostReadService;
 import com.techeer.carpool.domain.post.service.PostUpdateService;
 import com.techeer.carpool.global.common.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

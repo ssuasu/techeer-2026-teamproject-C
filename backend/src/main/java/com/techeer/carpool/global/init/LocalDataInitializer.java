@@ -4,8 +4,14 @@ import com.techeer.carpool.domain.comment.entity.Comment;
 import com.techeer.carpool.domain.comment.repository.CommentRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
+
+import com.techeer.carpool.domain.vehicle.entity.CarColor;
+import com.techeer.carpool.domain.vehicle.entity.VehicleOption;
+import com.techeer.carpool.domain.vehicle.repository.VehicleOptionRepository;
+
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.repository.PostRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -26,6 +32,7 @@ public class LocalDataInitializer implements CommandLineRunner {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final VehicleOptionRepository vehicleOptionRepository;
 
     @Override
     public void run(String... args) {
@@ -36,6 +43,7 @@ public class LocalDataInitializer implements CommandLineRunner {
             seedPosts(test, admin);
         }
 
+        initVehicleOptions();
         log.info("[LocalDataInitializer] 초기 데이터 생성 완료");
     }
 
@@ -112,5 +120,29 @@ public class LocalDataInitializer implements CommandLineRunner {
                         .password(passwordEncoder.encode(password))
                         .nickname(nickname)
                         .build()));
+    }
+
+    private void initVehicleOptions() {
+        if (vehicleOptionRepository.count() > 0) return;
+
+        List<String[]> models = List.of(
+                new String[]{"현대", "아반떼"},
+                new String[]{"현대", "소나타"},
+                new String[]{"현대", "그랜저"},
+                new String[]{"기아", "K5"},
+                new String[]{"기아", "스포티지"},
+                new String[]{"기아", "카니발"},
+                new String[]{"BMW", "3시리즈"},
+                new String[]{"벤츠", "E클래스"}
+        );
+
+        List<VehicleOption> options = new java.util.ArrayList<>();
+        for (String[] m : models) {
+            for (CarColor color : CarColor.values()) {
+                options.add(VehicleOption.builder()
+                        .brand(m[0]).model(m[1]).color(color).build());
+            }
+        }
+        vehicleOptionRepository.saveAll(options);
     }
 }
