@@ -16,4 +16,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findByPostIdOrderByCreatedAtAsc(Long postId);
 
     long countByPostIdAndStatus(Long postId, ApplicationStatus status);
+
+    List<Application> findByPostIdAndStatus(Long postId, ApplicationStatus status);
 }

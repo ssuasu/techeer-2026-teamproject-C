@@ -1,5 +1,9 @@
 package com.techeer.carpool.domain.ride.service;
 
+import com.techeer.carpool.domain.application.entity.Application;
+import com.techeer.carpool.domain.application.entity.ApplicationStatus;
+import com.techeer.carpool.domain.application.repository.ApplicationRepository;
+import com.techeer.carpool.domain.driver.repository.DriverRepository;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.entity.PostStatus;
 import com.techeer.carpool.domain.post.repository.PostRepository;
@@ -26,9 +30,14 @@ public class RideService {
     private final RideRepository rideRepository;
     private final RidePassengerRepository ridePassengerRepository;
     private final PostRepository postRepository;
+    private final DriverRepository driverRepository;
+    private final ApplicationRepository applicationRepository;
 
     @Transactional
     public RideResponse createRide(RideCreateRequest request, Long driverId) {
+        driverRepository.findByMemberIdAndDeletedFalse(driverId)
+                .orElseThrow(() -> new CarpoolException(ErrorCode.DRIVER_NOT_FOUND));
+
         Post post = postRepository.findByIdAndDeletedFalse(request.getPostId())
                 .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
         if (!post.getMemberId().equals(driverId)) {
@@ -37,11 +46,23 @@ public class RideService {
         if (post.getStatus() != PostStatus.OPEN) {
             throw new CarpoolException(ErrorCode.RIDE_INVALID_STATUS);
         }
-        Ride ride = Ride.builder()
+        Ride ride = rideRepository.save(Ride.builder()
                 .postId(request.getPostId())
                 .driverId(driverId)
-                .build();
-        return RideResponse.from(rideRepository.save(ride));
+                .build());
+
+        List<Application> accepted = applicationRepository.findByPostIdAndStatus(
+                request.getPostId(), ApplicationStatus.ACCEPTED);
+        List<RidePassenger> passengers = accepted.stream()
+                .map(app -> RidePassenger.builder()
+                        .ride(ride)
+                        .applicationId(app.getId())
+                        .passengerId(app.getApplicantId())
+                        .build())
+                .collect(Collectors.toList());
+        ridePassengerRepository.saveAll(passengers);
+
+        return RideResponse.from(ride);
     }
 
     public RideResponse getRide(Long rideId) {
