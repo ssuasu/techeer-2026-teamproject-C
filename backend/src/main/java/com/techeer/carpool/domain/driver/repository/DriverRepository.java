@@ -9,5 +9,5 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     Optional<Driver> findByMemberIdAndDeletedFalse(Long memberId);
 
-    boolean existsByCarNumber(String carNumber);
+    boolean existsByCarNumberAndDeletedFalse(String carNumber);
 }

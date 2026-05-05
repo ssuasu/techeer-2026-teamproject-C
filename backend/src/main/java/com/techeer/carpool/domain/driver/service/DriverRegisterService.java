@@ -30,7 +30,7 @@ public class DriverRegisterService {
             throw new CarpoolException(ErrorCode.DRIVER_ALREADY_REGISTERED);
         }
 
-        if (driverRepository.existsByCarNumber(request.getCarNumber())) {
+        if (driverRepository.existsByCarNumberAndDeletedFalse(request.getCarNumber())) {
             throw new CarpoolException(ErrorCode.CAR_NUMBER_DUPLICATE);
         }
 

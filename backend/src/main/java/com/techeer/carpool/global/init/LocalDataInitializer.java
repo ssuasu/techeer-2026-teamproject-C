@@ -2,6 +2,8 @@ package com.techeer.carpool.global.init;
 
 import com.techeer.carpool.domain.comment.entity.Comment;
 import com.techeer.carpool.domain.comment.repository.CommentRepository;
+import com.techeer.carpool.domain.driver.entity.Driver;
+import com.techeer.carpool.domain.driver.repository.DriverRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
 
@@ -33,6 +35,7 @@ public class LocalDataInitializer implements CommandLineRunner {
     private final CommentRepository commentRepository;
     private final PasswordEncoder passwordEncoder;
     private final VehicleOptionRepository vehicleOptionRepository;
+    private final DriverRepository driverRepository;
 
     @Override
     public void run(String... args) {
@@ -43,7 +46,8 @@ public class LocalDataInitializer implements CommandLineRunner {
             seedPosts(test, admin);
         }
 
-        initVehicleOptions();
+        List<VehicleOption> vehicleOptions = initVehicleOptions();
+        seedDrivers(test, admin, vehicleOptions);
         log.info("[LocalDataInitializer] 초기 데이터 생성 완료");
     }
 
@@ -122,8 +126,30 @@ public class LocalDataInitializer implements CommandLineRunner {
                         .build()));
     }
 
-    private void initVehicleOptions() {
-        if (vehicleOptionRepository.count() > 0) return;
+    private void seedDrivers(Member test, Member admin, List<VehicleOption> vehicleOptions) {
+        if (driverRepository.count() > 0) return;
+
+        // 아반떼 흰색(index 0), 소나타 검정(index 8)
+        VehicleOption testOption  = vehicleOptions.get(0);
+        VehicleOption adminOption = vehicleOptions.get(8);
+
+        driverRepository.save(Driver.builder()
+                .memberId(test.getId())
+                .vehicleOptionId(testOption.getId())
+                .carNumber("12가3456")
+                .build());
+
+        driverRepository.save(Driver.builder()
+                .memberId(admin.getId())
+                .vehicleOptionId(adminOption.getId())
+                .carNumber("99나8765")
+                .build());
+    }
+
+    private List<VehicleOption> initVehicleOptions() {
+        if (vehicleOptionRepository.count() > 0) {
+            return vehicleOptionRepository.findAll();
+        }
 
         List<String[]> models = List.of(
                 new String[]{"현대", "아반떼"},
@@ -143,6 +169,6 @@ public class LocalDataInitializer implements CommandLineRunner {
                         .brand(m[0]).model(m[1]).color(color).build());
             }
         }
-        vehicleOptionRepository.saveAll(options);
+        return vehicleOptionRepository.saveAll(options);
     }
 }
