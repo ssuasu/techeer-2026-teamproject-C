@@ -10,5 +10,7 @@ public interface RidePassengerRepository extends JpaRepository<RidePassenger, Lo
 
     Optional<RidePassenger> findByRideIdAndApplicationId(Long rideId, Long applicationId);
 
+    List<RidePassenger> findByRideId(Long rideId);
+
     List<RidePassenger> findAllByPassengerIdOrderByCreatedAtDesc(Long passengerId);
 }

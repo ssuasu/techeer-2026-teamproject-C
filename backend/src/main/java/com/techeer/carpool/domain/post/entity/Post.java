@@ -124,6 +124,10 @@ public class Post extends SoftDeletableEntity {
         }
     }
 
+    public void refreshDepartureTime(LocalDateTime time) {
+        this.departureTime = time;
+    }
+
     public void updateFrom(PostUpdateCommand command) {
         this.title = command.title();
         this.departureLocation = command.departureLocation();

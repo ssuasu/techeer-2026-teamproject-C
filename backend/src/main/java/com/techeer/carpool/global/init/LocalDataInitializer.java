@@ -66,6 +66,8 @@ public class LocalDataInitializer implements CommandLineRunner {
             seedRides(test, admin, allPosts);
         }
 
+        refreshTimeSensitiveData(allPosts);
+
         log.info("[LocalDataInitializer] 초기 데이터 생성 완료");
     }
 
@@ -241,6 +243,33 @@ public class LocalDataInitializer implements CommandLineRunner {
         commentRepository.save(Comment.builder()
                 .postId(post.getId()).memberId(first.getId())
                 .content("좋아요, 당일 아침에 다시 연락 드릴게요 :)").build());
+    }
+
+    // ── Refresh ────────────────────────────────────────────────────────────────
+
+    private void refreshTimeSensitiveData(List<Post> posts) {
+        // 서울역 → 수원역: 앱 재시작 시마다 출발 시각을 지금으로부터 20분 후로 갱신
+        posts.stream()
+                .filter(p -> "서울역 → 수원역".equals(p.getTitle()))
+                .findFirst()
+                .ifPresent(p -> {
+                    p.refreshDepartureTime(LocalDateTime.now().plusMinutes(20));
+                    postRepository.save(p);
+                });
+
+        // IN_PROGRESS 운행: startedAt·boardedAt을 지금 기준으로 갱신
+        rideRepository.findAll().stream()
+                .filter(r -> r.getStatus() == RideStatus.IN_PROGRESS)
+                .findFirst()
+                .ifPresent(r -> {
+                    r.refreshStartedAt(LocalDateTime.now().minusMinutes(20));
+                    rideRepository.save(r);
+                    ridePassengerRepository.findByRideId(r.getId())
+                            .forEach(rp -> {
+                                rp.refreshBoardedAt(LocalDateTime.now().minusMinutes(18));
+                                ridePassengerRepository.save(rp);
+                            });
+                });
     }
 
     // ── Rides ──────────────────────────────────────────────────────────────────

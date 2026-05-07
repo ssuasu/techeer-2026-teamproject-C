@@ -46,6 +46,10 @@ public class Ride extends BaseEntity {
 
     // ── 비즈니스 로직 ──────────────────────────────────────
 
+    public void refreshStartedAt(LocalDateTime time) {
+        this.startedAt = time;
+    }
+
     // 운행 시작 처리
     public void start() {
         // 예정 상태가 아니면 시작 불가 (예: 이미 진행 중이거나 완료된 운행)
