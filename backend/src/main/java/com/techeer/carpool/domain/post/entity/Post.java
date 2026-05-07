@@ -97,6 +97,13 @@ public class Post extends SoftDeletableEntity {
         this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
     }
 
+    public void close() {
+        if (this.status == PostStatus.CLOSED) {
+            throw new IllegalStateException("이미 마감된 게시글입니다.");
+        }
+        this.status = PostStatus.CLOSED;
+    }
+
     public boolean isFull() {
         return this.currentPassengers >= this.maxPassengers;
     }
@@ -127,7 +134,7 @@ public class Post extends SoftDeletableEntity {
         this.destinationLng = command.destinationLng();
         this.departureTime = command.departureTime();
         this.maxPassengers = command.maxPassengers();
-        this.description = command.description();
+        if (command.description() != null) this.description = command.description();
         this.autoAccept = command.autoAccept();
         this.status = command.status();
         this.price = command.price();

@@ -43,7 +43,7 @@ public class RideService {
         if (!post.getMemberId().equals(driverId)) {
             throw new CarpoolException(ErrorCode.RIDE_FORBIDDEN);
         }
-        if (post.getStatus() != PostStatus.OPEN) {
+        if (post.getStatus() != PostStatus.OPEN && post.getStatus() != PostStatus.CLOSED) {
             throw new CarpoolException(ErrorCode.RIDE_INVALID_STATUS);
         }
         Ride ride = rideRepository.save(Ride.builder()
@@ -62,11 +62,13 @@ public class RideService {
                 .collect(Collectors.toList());
         ridePassengerRepository.saveAll(passengers);
 
-        return RideResponse.from(ride);
+        return RideResponse.from(ride, post);
     }
 
     public RideResponse getRide(Long rideId) {
-        return RideResponse.from(findRideById(rideId));
+        Ride ride = findRideById(rideId);
+        Post post = postRepository.findByIdAndDeletedFalse(ride.getPostId()).orElse(null);
+        return RideResponse.from(ride, post);
     }
 
     @Transactional
@@ -74,7 +76,8 @@ public class RideService {
         Ride ride = findRideById(rideId);
         validateDriver(ride, requesterId);
         ride.start();
-        return RideResponse.from(ride);
+        Post post = postRepository.findByIdAndDeletedFalse(ride.getPostId()).orElse(null);
+        return RideResponse.from(ride, post);
     }
 
     @Transactional
@@ -82,7 +85,8 @@ public class RideService {
         Ride ride = findRideById(rideId);
         validateDriver(ride, requesterId);
         ride.complete();
-        return RideResponse.from(ride);
+        Post post = postRepository.findByIdAndDeletedFalse(ride.getPostId()).orElse(null);
+        return RideResponse.from(ride, post);
     }
 
     @Transactional
@@ -93,8 +97,37 @@ public class RideService {
         return LocationResponse.from(ride);
     }
 
+    @Transactional
+    public void updateLocationDirect(Long rideId, Double latitude, Double longitude, Long requesterId) {
+        Ride ride = rideRepository.findById(rideId).orElse(null);
+        if (ride == null || !ride.getDriverId().equals(requesterId)) return;
+        if (ride.getStatus() == RideStatus.COMPLETED) return;
+        ride.updateLocation(latitude, longitude);
+    }
+
     public LocationResponse getLocation(Long rideId) {
         return LocationResponse.from(findRideById(rideId));
+    }
+
+    public List<RideResponse> getMyRidesAsDriver(Long driverId) {
+        return rideRepository.findAllByDriverIdOrderByCreatedAtDesc(driverId)
+                .stream()
+                .map(ride -> {
+                    Post post = postRepository.findByIdAndDeletedFalse(ride.getPostId()).orElse(null);
+                    return RideResponse.from(ride, post);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<RideResponse> getMyRidesAsPassenger(Long passengerId) {
+        return ridePassengerRepository.findAllByPassengerIdOrderByCreatedAtDesc(passengerId)
+                .stream()
+                .map(rp -> {
+                    Ride ride = rp.getRide();
+                    Post post = postRepository.findByIdAndDeletedFalse(ride.getPostId()).orElse(null);
+                    return RideResponse.from(ride, post);
+                })
+                .collect(Collectors.toList());
     }
 
     public List<PassengerResponse> getPassengers(Long rideId) {
@@ -126,6 +159,12 @@ public class RideService {
         RidePassenger passenger = findPassenger(rideId, applicationId);
         passenger.dropOff();
         return PassengerResponse.from(passenger);
+    }
+
+    public boolean isPassengerInRide(Long rideId, Long passengerId) {
+        Ride ride = findRideById(rideId);
+        return ride.getPassengers().stream()
+                .anyMatch(p -> p.getPassengerId().equals(passengerId));
     }
 
     private Ride findRideById(Long rideId) {
