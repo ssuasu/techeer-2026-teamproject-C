@@ -3,10 +3,12 @@ package com.techeer.carpool.domain.post.controller;
 import com.techeer.carpool.domain.post.dto.PostCreateRequest;
 import com.techeer.carpool.domain.post.dto.PostResponse;
 import com.techeer.carpool.domain.post.dto.PostUpdateRequest;
+import com.techeer.carpool.domain.post.service.PostCloseService;
 import com.techeer.carpool.domain.post.service.PostCreateService;
 import com.techeer.carpool.domain.post.service.PostDeleteService;
 import com.techeer.carpool.domain.post.service.PostReadService;
 import com.techeer.carpool.domain.post.service.PostUpdateService;
+import com.techeer.carpool.domain.ride.dto.RideResponse;
 import com.techeer.carpool.global.common.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class PostController {
     private final PostReadService postReadService;
     private final PostUpdateService postUpdateService;
     private final PostDeleteService postDeleteService;
+    private final PostCloseService postCloseService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<PostResponse>> createPost(
@@ -63,5 +66,13 @@ public class PostController {
         Long memberId = (Long) authentication.getPrincipal();
         postDeleteService.deletePost(id, memberId);
         return ResponseEntity.ok(ApiResponse.of("게시글이 삭제되었습니다."));
+    }
+
+    @PostMapping("/{id}/close")
+    public ResponseEntity<ApiResponse<RideResponse>> closePost(
+            @PathVariable Long id,
+            Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(ApiResponse.of("신청이 마감되었습니다. 운행이 예약되었습니다.", postCloseService.closePost(id, memberId)));
     }
 }
