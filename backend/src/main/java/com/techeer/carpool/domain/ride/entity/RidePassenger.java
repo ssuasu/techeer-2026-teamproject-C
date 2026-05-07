@@ -39,6 +39,10 @@ public class RidePassenger extends BaseEntity {
 
     // ── 비즈니스 로직 ──────────────────────────────────────
 
+    public void refreshBoardedAt(LocalDateTime time) {
+        this.boardedAt = time;
+    }
+
     // 탑승 확인 처리 (드라이버가 탑승자를 태웠을 때 호출)
     public void board() {
         // 대기 상태인 탑승자만 탑승 확인 가능
