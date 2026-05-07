@@ -43,7 +43,6 @@ public class LocalDataInitializer implements CommandLineRunner {
     private final PostRepository postRepository;
     private final ApplicationRepository applicationRepository;
     private final CommentRepository commentRepository;
-    private final ApplicationRepository applicationRepository;
     private final RideRepository rideRepository;
     private final RidePassengerRepository ridePassengerRepository;
     private final ReviewRepository reviewRepository;
@@ -170,7 +169,7 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .build());
 
         // test 유저 소유 게시글 추가 (관리자가 신청할 대상)
-        Post p4 = postRepository.save(Post.builder()
+        Post p7 = postRepository.save(Post.builder()
                 .memberId(test.getId())
                 .title("잠실역 → 강남역")
                 .departureLocation("잠실역")
@@ -184,7 +183,7 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .price(3000)
                 .build());
 
-        Post p5 = postRepository.save(Post.builder()
+        Post p8 = postRepository.save(Post.builder()
                 .memberId(test.getId())
                 .title("신촌역 → 인천공항")
                 .departureLocation("신촌역")
@@ -198,34 +197,34 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .price(20000)
                 .build());
 
-        seedApplications(test, admin, p2, p4, p5);
+        seedApplications(test, admin, p2, p7, p8);
 
         seedComments(p1, test, admin);
         seedComments(p2, admin, test);
 
-        return List.of(p1, p2, p3, p4, p5, p6);
+        return List.of(p1, p2, p3, p4, p5, p6, p7, p8);
     }
 
-    private void seedApplications(Member test, Member admin, Post p2, Post p4, Post p5) {
+    private void seedApplications(Member test, Member admin, Post p2, Post p7, Post p8) {
         // 관리자 → p2 (홍대→여의도): PENDING — 테스트유저가 아직 처리 안 한 신청
         applicationRepository.save(Application.builder()
                 .postId(p2.getId())
                 .applicantId(admin.getId())
                 .build());
 
-        // 관리자 → p4 (잠실→강남): ACCEPTED — 수락된 신청, currentPassengers 반영
+        // 관리자 → p7 (잠실→강남, test 소유): ACCEPTED — 수락된 신청, currentPassengers 반영
         Application acceptedApp = applicationRepository.save(Application.builder()
-                .postId(p4.getId())
+                .postId(p7.getId())
                 .applicantId(admin.getId())
                 .build());
         acceptedApp.accept();
         applicationRepository.save(acceptedApp);
-        p4.incrementPassengers();
-        postRepository.save(p4);
+        p7.incrementPassengers();
+        postRepository.save(p7);
 
-        // 관리자 → p5 (신촌→인천공항): REJECTED — 거절된 신청
+        // 관리자 → p8 (신촌→인천공항, test 소유): REJECTED — 거절된 신청
         Application rejectedApp = applicationRepository.save(Application.builder()
-                .postId(p5.getId())
+                .postId(p8.getId())
                 .applicantId(admin.getId())
                 .build());
         rejectedApp.reject();
