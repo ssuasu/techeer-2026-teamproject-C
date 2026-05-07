@@ -66,13 +66,12 @@ public class Ride extends BaseEntity {
         this.completedAt = LocalDateTime.now();   // 종료 시각 기록
     }
 
-    // 드라이버 위치 업데이트 (브라우저 Geolocation API가 주기적으로 호출)
+    // 드라이버 위치 업데이트 (출발 30분 전(SCHEDULED) 또는 운행 중(IN_PROGRESS) 허용)
     public void updateLocation(Double latitude, Double longitude) {
-        // 운행 중일 때만 위치 업데이트 허용
-        if (this.status != RideStatus.IN_PROGRESS) {
-            throw new IllegalStateException("진행 중인 운행만 위치를 업데이트할 수 있습니다.");
+        if (this.status == RideStatus.COMPLETED) {
+            throw new IllegalStateException("완료된 운행은 위치를 업데이트할 수 없습니다.");
         }
-        this.currentLatitude = latitude;    // 위도 갱신
-        this.currentLongitude = longitude;  // 경도 갱신
+        this.currentLatitude = latitude;
+        this.currentLongitude = longitude;
     }
 }
