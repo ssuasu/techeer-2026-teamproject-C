@@ -25,7 +25,7 @@ public class DriverUpdateService {
                 .orElseThrow(() -> new CarpoolException(ErrorCode.DRIVER_NOT_FOUND));
 
         if (!driver.getCarNumber().equals(request.getCarNumber())
-                && driverRepository.existsByCarNumber(request.getCarNumber())) {
+                && driverRepository.existsByCarNumberAndDeletedFalse(request.getCarNumber())) {
             throw new CarpoolException(ErrorCode.CAR_NUMBER_DUPLICATE);
         }
 

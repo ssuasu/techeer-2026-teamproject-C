@@ -34,7 +34,14 @@ public enum ErrorCode {
     RIDE_INVALID_STATUS("RIDE_003", "현재 상태에서 허용되지 않는 작업입니다.", HttpStatus.CONFLICT),
     RIDE_PASSENGER_NOT_FOUND("RIDE_004", "탑승자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
-    MEMBER_FORBIDDEN("MEMBER_001", "본인의 프로필만 조회할 수 있습니다.", HttpStatus.FORBIDDEN);
+    MEMBER_FORBIDDEN("MEMBER_001", "본인의 프로필만 조회할 수 있습니다.", HttpStatus.FORBIDDEN),
+
+    POST_ALREADY_CLOSED("POST_003", "이미 마감된 게시글입니다.", HttpStatus.CONFLICT),
+
+    REVIEW_ALREADY_EXISTS("REVIEW_001", "이미 평가한 운행입니다.", HttpStatus.CONFLICT),
+    REVIEW_FORBIDDEN("REVIEW_002", "평가 권한이 없습니다.", HttpStatus.FORBIDDEN),
+    REVIEW_NOT_FOUND("REVIEW_003", "평가를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    REVIEW_RIDE_NOT_COMPLETED("REVIEW_004", "완료된 운행만 평가할 수 있습니다.", HttpStatus.CONFLICT);
 
 
     private final String code;
