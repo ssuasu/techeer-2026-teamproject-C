@@ -34,6 +34,11 @@ public class RidePassenger extends BaseEntity {
     @Builder.Default              // 빌더로 생성 시 기본값 지정
     private PassengerStatus status = PassengerStatus.PENDING;  // 기본값은 "대기"
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
+
     private LocalDateTime boardedAt;     // 탑승 확인 시각
     private LocalDateTime droppedOffAt;  // 하차 확인 시각
 
