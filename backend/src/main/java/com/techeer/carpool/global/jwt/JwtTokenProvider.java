@@ -1,5 +1,7 @@
 package com.techeer.carpool.global.jwt;
 
+import com.techeer.carpool.global.exception.CarpoolException;
+import com.techeer.carpool.global.exception.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,6 +60,24 @@ public class JwtTokenProvider {
 
     public long getRefreshTokenExpirationSeconds() {
         return refreshTokenExpiration / 1000;
+    }
+
+    // 로그아웃 시 AccessToken 블랙리스트 TTL 계산용
+    public long getRemainingSeconds(String token) {
+        Date expiration = getClaims(token).getExpiration();
+        long remaining = expiration.getTime() - System.currentTimeMillis();
+        return Math.max(0, remaining / 1000);
+    }
+
+    // 만료(AUTH_005) vs 위변조(AUTH_004) 구분 — TokenReissueService에서 사용
+    public void validateRefreshToken(String token) {
+        try {
+            getClaims(token);
+        } catch (ExpiredJwtException e) {
+            throw new CarpoolException(ErrorCode.EXPIRED_TOKEN);
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new CarpoolException(ErrorCode.INVALID_TOKEN);
+        }
     }
 
     private String buildToken(Long memberId, long expiration) {
