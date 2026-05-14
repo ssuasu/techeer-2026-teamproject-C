@@ -41,6 +41,7 @@ class ApplicationIntegrationTest {
 
     @MockBean RefreshTokenRedisRepository refreshTokenRedisRepository;
     @MockBean BlacklistRedisRepository blacklistRedisRepository;
+    @MockBean com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher notificationPublisher;
 
     private Long ownerId;
     private Long applicant1Id;

@@ -11,6 +11,7 @@ class CarpoolApplicationTests {
 
 	@MockBean RefreshTokenRedisRepository refreshTokenRedisRepository;
 	@MockBean BlacklistRedisRepository blacklistRedisRepository;
+	@MockBean com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher notificationPublisher;
 
 	@Test
 	void contextLoads() {
