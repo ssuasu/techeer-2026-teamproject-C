@@ -4,7 +4,9 @@ import com.techeer.carpool.domain.post.application.entity.Application;
 import com.techeer.carpool.domain.post.application.entity.ApplicationStatus;
 import com.techeer.carpool.domain.post.application.repository.ApplicationRepository;
 import com.techeer.carpool.domain.notification.dto.NotificationPayload;
+import com.techeer.carpool.domain.notification.entity.Notification;
 import com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher;
+import com.techeer.carpool.domain.notification.service.NotificationService;
 import com.techeer.carpool.domain.notification.type.NotificationType;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.repository.PostRepository;
@@ -25,6 +27,7 @@ public class PostDeleteService {
     private final PostRepository postRepository;
     private final ApplicationRepository applicationRepository;
     private final RedisNotificationPublisher notificationPublisher;
+    private final NotificationService notificationService;
 
     @Transactional
     public void deletePost(Long id, Long requesterId) {
@@ -41,6 +44,9 @@ public class PostDeleteService {
                 .map(Application::getApplicantId)
                 .collect(Collectors.toList());
 
+        notificationService.saveAll(applicantIds.stream()
+                .map(applicantId -> Notification.ofPostCancelled(applicantId, id))
+                .collect(Collectors.toList()));
         notificationPublisher.publishToMany(applicantIds, NotificationPayload.builder()
                 .type(NotificationType.POST_CANCELLED)
                 .message("신청한 카풀 게시글이 취소되었습니다.")

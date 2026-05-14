@@ -41,7 +41,10 @@ public enum ErrorCode {
     REVIEW_ALREADY_EXISTS("REVIEW_001", "이미 평가한 운행입니다.", HttpStatus.CONFLICT),
     REVIEW_FORBIDDEN("REVIEW_002", "평가 권한이 없습니다.", HttpStatus.FORBIDDEN),
     REVIEW_NOT_FOUND("REVIEW_003", "평가를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    REVIEW_RIDE_NOT_COMPLETED("REVIEW_004", "완료된 운행만 평가할 수 있습니다.", HttpStatus.CONFLICT);
+    REVIEW_RIDE_NOT_COMPLETED("REVIEW_004", "완료된 운행만 평가할 수 있습니다.", HttpStatus.CONFLICT),
+
+    NOTIFICATION_NOT_FOUND("NOTIFICATION_001", "알림을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    NOTIFICATION_FORBIDDEN("NOTIFICATION_002", "알림 접근 권한이 없습니다.", HttpStatus.FORBIDDEN);
 
 
     private final String code;
