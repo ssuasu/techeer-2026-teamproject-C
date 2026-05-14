@@ -1,6 +1,6 @@
 package com.techeer.carpool.domain.member.service;
 
-import com.techeer.carpool.domain.auth.repository.RefreshTokenRepository;
+import com.techeer.carpool.domain.auth.repository.RefreshTokenRedisRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.global.exception.CarpoolException;
@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberWithdrawService {
 
     private final MemberRepository memberRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     @Transactional
     public void withdraw(Long memberId) {
@@ -22,6 +22,6 @@ public class MemberWithdrawService {
                 .orElseThrow(() -> new CarpoolException(ErrorCode.MEMBER_NOT_FOUND));
 
         member.withdraw();
-        refreshTokenRepository.deleteByMemberId(memberId);
+        refreshTokenRedisRepository.delete(memberId);
     }
 }
