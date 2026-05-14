@@ -6,6 +6,9 @@ import com.techeer.carpool.domain.application.entity.ApplicationStatus;
 import com.techeer.carpool.domain.application.repository.ApplicationRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
+import com.techeer.carpool.domain.notification.dto.NotificationPayload;
+import com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher;
+import com.techeer.carpool.domain.notification.type.NotificationType;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.repository.PostRepository;
 import com.techeer.carpool.global.exception.CarpoolException;
@@ -14,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class ApplicationCreateService {
@@ -21,6 +26,7 @@ public class ApplicationCreateService {
     private final ApplicationRepository applicationRepository;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
+    private final RedisNotificationPublisher notificationPublisher;
 
     @Transactional
     public ApplicationResponse apply(Long postId, Long applicantId) {
@@ -54,6 +60,12 @@ public class ApplicationCreateService {
         String nickname = memberRepository.findById(applicantId)
                 .map(Member::getNickname)
                 .orElse("알 수 없음");
+
+        notificationPublisher.publish(post.getMemberId(), NotificationPayload.builder()
+                .type(NotificationType.APPLICATION_RECEIVED)
+                .message(nickname + "님이 카풀을 신청했습니다.")
+                .data(Map.of("postId", postId, "applicationId", saved.getId()))
+                .build());
 
         return ApplicationResponse.of(saved, nickname);
     }

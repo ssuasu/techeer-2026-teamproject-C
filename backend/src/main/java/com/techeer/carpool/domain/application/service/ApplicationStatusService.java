@@ -6,6 +6,9 @@ import com.techeer.carpool.domain.application.entity.ApplicationStatus;
 import com.techeer.carpool.domain.application.repository.ApplicationRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
+import com.techeer.carpool.domain.notification.dto.NotificationPayload;
+import com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher;
+import com.techeer.carpool.domain.notification.type.NotificationType;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.repository.PostRepository;
 import com.techeer.carpool.global.exception.CarpoolException;
@@ -14,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class ApplicationStatusService {
@@ -21,6 +26,7 @@ public class ApplicationStatusService {
     private final ApplicationRepository applicationRepository;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
+    private final RedisNotificationPublisher notificationPublisher;
 
     @Transactional
     public ApplicationResponse accept(Long applicationId, Long requesterId) {
@@ -40,6 +46,12 @@ public class ApplicationStatusService {
         application.accept();
         post.incrementPassengers();
 
+        notificationPublisher.publish(application.getApplicantId(), NotificationPayload.builder()
+                .type(NotificationType.APPLICATION_ACCEPTED)
+                .message("카풀 신청이 승인되었습니다.")
+                .data(Map.of("postId", application.getPostId()))
+                .build());
+
         return toResponse(application);
     }
 
@@ -55,6 +67,13 @@ public class ApplicationStatusService {
         }
 
         application.reject();
+
+        notificationPublisher.publish(application.getApplicantId(), NotificationPayload.builder()
+                .type(NotificationType.APPLICATION_REJECTED)
+                .message("카풀 신청이 거절되었습니다.")
+                .data(Map.of("postId", application.getPostId()))
+                .build());
+
         return toResponse(application);
     }
 
