@@ -6,12 +6,15 @@ import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.entity.PostStatus;
 import com.techeer.carpool.domain.post.repository.PostRepository;
+import com.techeer.carpool.domain.auth.repository.BlacklistRedisRepository;
+import com.techeer.carpool.domain.auth.repository.RefreshTokenRedisRepository;
 import com.techeer.carpool.global.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -34,6 +37,9 @@ class PostIntegrationTest {
     @Autowired PostRepository postRepository;
     @Autowired MemberRepository memberRepository;
     @Autowired JwtTokenProvider jwtTokenProvider;
+
+    @MockBean RefreshTokenRedisRepository refreshTokenRedisRepository;
+    @MockBean BlacklistRedisRepository blacklistRedisRepository;
 
     private Long ownerId;
     private Long otherId;

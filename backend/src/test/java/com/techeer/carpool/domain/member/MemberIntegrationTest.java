@@ -1,7 +1,8 @@
 package com.techeer.carpool.domain.member;
 
 import tools.jackson.databind.ObjectMapper;
-import com.techeer.carpool.domain.auth.repository.RefreshTokenRepository;
+import com.techeer.carpool.domain.auth.repository.BlacklistRedisRepository;
+import com.techeer.carpool.domain.auth.repository.RefreshTokenRedisRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.global.jwt.JwtTokenProvider;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,9 +31,11 @@ class MemberIntegrationTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @Autowired MemberRepository memberRepository;
-    @Autowired RefreshTokenRepository refreshTokenRepository;
     @Autowired JwtTokenProvider jwtTokenProvider;
     @Autowired PasswordEncoder passwordEncoder;
+
+    @MockBean RefreshTokenRedisRepository refreshTokenRedisRepository;
+    @MockBean BlacklistRedisRepository blacklistRedisRepository;
 
     private Long memberId;
     private Long otherMemberId;
@@ -40,7 +44,6 @@ class MemberIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        refreshTokenRepository.deleteAll();
         memberRepository.deleteAll();
 
         Member member = memberRepository.save(Member.builder()
