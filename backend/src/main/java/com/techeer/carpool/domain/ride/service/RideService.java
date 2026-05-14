@@ -4,6 +4,9 @@ import com.techeer.carpool.domain.application.entity.Application;
 import com.techeer.carpool.domain.application.entity.ApplicationStatus;
 import com.techeer.carpool.domain.application.repository.ApplicationRepository;
 import com.techeer.carpool.domain.driver.repository.DriverRepository;
+import com.techeer.carpool.domain.notification.dto.NotificationPayload;
+import com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher;
+import com.techeer.carpool.domain.notification.type.NotificationType;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.entity.PostStatus;
 import com.techeer.carpool.domain.post.repository.PostRepository;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +36,7 @@ public class RideService {
     private final PostRepository postRepository;
     private final DriverRepository driverRepository;
     private final ApplicationRepository applicationRepository;
+    private final RedisNotificationPublisher notificationPublisher;
 
     @Transactional
     public RideResponse createRide(RideCreateRequest request, Long driverId) {
@@ -76,6 +81,16 @@ public class RideService {
         Ride ride = findRideById(rideId);
         validateDriver(ride, requesterId);
         ride.start();
+
+        List<Long> passengerIds = ride.getPassengers().stream()
+                .map(RidePassenger::getPassengerId)
+                .collect(Collectors.toList());
+        notificationPublisher.publishToMany(passengerIds, NotificationPayload.builder()
+                .type(NotificationType.RIDE_STARTED)
+                .message("카풀 운행이 시작되었습니다.")
+                .data(Map.of("rideId", rideId))
+                .build());
+
         Post post = postRepository.findByIdAndDeletedFalse(ride.getPostId()).orElse(null);
         return RideResponse.from(ride, post);
     }
@@ -85,6 +100,16 @@ public class RideService {
         Ride ride = findRideById(rideId);
         validateDriver(ride, requesterId);
         ride.complete();
+
+        List<Long> passengerIds = ride.getPassengers().stream()
+                .map(RidePassenger::getPassengerId)
+                .collect(Collectors.toList());
+        notificationPublisher.publishToMany(passengerIds, NotificationPayload.builder()
+                .type(NotificationType.RIDE_ENDED)
+                .message("카풀 운행이 종료되었습니다.")
+                .data(Map.of("rideId", rideId))
+                .build());
+
         Post post = postRepository.findByIdAndDeletedFalse(ride.getPostId()).orElse(null);
         return RideResponse.from(ride, post);
     }

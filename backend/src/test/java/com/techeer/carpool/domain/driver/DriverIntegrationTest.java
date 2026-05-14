@@ -7,12 +7,15 @@ import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.domain.vehicle.entity.CarColor;
 import com.techeer.carpool.domain.vehicle.entity.VehicleOption;
 import com.techeer.carpool.domain.vehicle.repository.VehicleOptionRepository;
+import com.techeer.carpool.domain.auth.repository.BlacklistRedisRepository;
+import com.techeer.carpool.domain.auth.repository.RefreshTokenRedisRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,6 +37,9 @@ class DriverIntegrationTest {
     @Autowired DriverRepository driverRepository;
     @Autowired VehicleOptionRepository vehicleOptionRepository;
     @Autowired PasswordEncoder passwordEncoder;
+
+    @MockBean RefreshTokenRedisRepository refreshTokenRedisRepository;
+    @MockBean BlacklistRedisRepository blacklistRedisRepository;
 
     private Long vehicleOptionId;
     private String accessToken;

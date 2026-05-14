@@ -1,5 +1,6 @@
 package com.techeer.carpool.global.config;
 
+import com.techeer.carpool.domain.auth.repository.BlacklistRedisRepository;
 import com.techeer.carpool.global.jwt.JwtAuthenticationFilter;
 import com.techeer.carpool.global.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final BlacklistRedisRepository blacklistRedisRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -41,7 +43,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) ->
                                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, blacklistRedisRepository),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

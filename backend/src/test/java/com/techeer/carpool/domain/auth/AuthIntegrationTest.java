@@ -1,8 +1,8 @@
 package com.techeer.carpool.domain.auth;
 
 import tools.jackson.databind.ObjectMapper;
-import com.techeer.carpool.domain.auth.entity.RefreshToken;
-import com.techeer.carpool.domain.auth.repository.RefreshTokenRepository;
+import com.techeer.carpool.domain.auth.repository.BlacklistRedisRepository;
+import com.techeer.carpool.domain.auth.repository.RefreshTokenRedisRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.global.jwt.JwtTokenProvider;
@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +21,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Map;
+import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -32,13 +36,15 @@ class AuthIntegrationTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @Autowired MemberRepository memberRepository;
-    @Autowired RefreshTokenRepository refreshTokenRepository;
     @Autowired JwtTokenProvider jwtTokenProvider;
     @Autowired PasswordEncoder passwordEncoder;
 
+    // Redis는 테스트 환경에 없으므로 MockBean으로 격리
+    @MockBean RefreshTokenRedisRepository refreshTokenRedisRepository;
+    @MockBean BlacklistRedisRepository blacklistRedisRepository;
+
     @BeforeEach
     void setUp() {
-        refreshTokenRepository.deleteAll();
         memberRepository.deleteAll();
     }
 
@@ -184,19 +190,14 @@ class AuthIntegrationTest {
                 .password(passwordEncoder.encode("password123"))
                 .nickname("유저").build());
 
-        // 로그인으로 쿠키 획득
-        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of(
-                                "email", "user@test.com",
-                                "password", "password123"
-                        ))))
-                .andReturn();
+        String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
 
-        Cookie refreshCookie = loginResult.getResponse().getCookie("refreshToken");
+        // Redis에 토큰이 저장된 상태를 Mock으로 재현
+        when(refreshTokenRedisRepository.findByMemberId(member.getId()))
+                .thenReturn(Optional.of(refreshToken));
 
         mockMvc.perform(post("/api/v1/auth/refresh")
-                        .cookie(refreshCookie))
+                        .cookie(new Cookie("refreshToken", refreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
                 .andExpect(cookie().exists("refreshToken"));
@@ -220,15 +221,18 @@ class AuthIntegrationTest {
     }
 
     @Test
-    @DisplayName("토큰 재발급 실패 - DB에 없는 토큰 (탈취 감지)")
-    void refresh_tokenNotInDb() throws Exception {
+    @DisplayName("토큰 재발급 실패 - Redis에 없는 토큰 (탈취 감지)")
+    void refresh_tokenNotInRedis() throws Exception {
         Member member = memberRepository.save(Member.builder()
                 .email("user@test.com")
                 .password(passwordEncoder.encode("pw"))
                 .nickname("유저").build());
 
-        // DB에 저장되지 않은 유효한 토큰
         String orphanToken = jwtTokenProvider.createRefreshToken(member.getId());
+
+        // Redis에 토큰 없음 → Optional.empty() 반환 (기본 MockBean 동작)
+        when(refreshTokenRedisRepository.findByMemberId(any()))
+                .thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/v1/auth/refresh")
                         .cookie(new Cookie("refreshToken", orphanToken)))

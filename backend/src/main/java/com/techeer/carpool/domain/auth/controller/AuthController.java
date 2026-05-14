@@ -4,6 +4,8 @@ import com.techeer.carpool.domain.auth.dto.AuthTokens;
 import com.techeer.carpool.domain.auth.dto.LoginRequest;
 import com.techeer.carpool.domain.auth.dto.SignupRequest;
 import com.techeer.carpool.domain.auth.dto.TokenResponse;
+import com.techeer.carpool.domain.auth.repository.BlacklistRedisRepository;
+import com.techeer.carpool.domain.auth.repository.RefreshTokenRedisRepository;
 import com.techeer.carpool.domain.auth.service.MemberLoginService;
 import com.techeer.carpool.domain.auth.service.MemberSignupService;
 import com.techeer.carpool.domain.auth.service.TokenReissueService;
@@ -17,9 +19,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -35,6 +40,8 @@ public class AuthController {
     private final MemberLoginService memberLoginService;
     private final TokenReissueService tokenReissueService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final BlacklistRedisRepository blacklistRedisRepository;
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     @Value("${jwt.cookie-secure}")
     private boolean cookieSecure;
@@ -63,6 +70,40 @@ public class AuthController {
         setRefreshTokenCookie(response, tokens.refreshToken());
         return ResponseEntity.ok(ApiResponse.of("토큰 재발급 성공",
                 TokenResponse.builder().accessToken(tokens.accessToken()).build()));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(Authentication authentication,
+                                                     HttpServletRequest request,
+                                                     HttpServletResponse response) {
+        Long memberId = (Long) authentication.getPrincipal();
+        String token = resolveToken(request);
+
+        if (token != null) {
+            long remaining = jwtTokenProvider.getRemainingSeconds(token);
+            blacklistRedisRepository.add(token, remaining);
+        }
+
+        refreshTokenRedisRepository.delete(memberId);
+
+        ResponseCookie deleteCookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE, "")
+                .maxAge(0)
+                .httpOnly(true)
+                .sameSite("Strict")
+                .path("/api/v1/auth")
+                .secure(cookieSecure)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
+
+        return ResponseEntity.ok(ApiResponse.of("로그아웃 성공"));
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
