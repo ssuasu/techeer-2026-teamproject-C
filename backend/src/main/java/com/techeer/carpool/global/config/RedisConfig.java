@@ -10,6 +10,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 public class RedisConfig {
@@ -38,5 +39,11 @@ public class RedisConfig {
                 new PatternTopic("notification:*")
         );
         return container;
+    }
+
+    // JSON 직렬화/역직렬화
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }
