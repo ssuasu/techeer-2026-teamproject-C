@@ -30,7 +30,7 @@ public class ApplicationCreateService {
 
     @Transactional
     public ApplicationResponse apply(Long postId, Long applicantId) {
-        Post post = postRepository.findByIdAndDeletedFalse(postId)
+        Post post = postRepository.findByIdAndDeletedFalseWithLock(postId)
                 .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
 
         if (post.getMemberId().equals(applicantId)) {

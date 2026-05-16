@@ -32,7 +32,8 @@ public class ApplicationStatusService {
     public ApplicationResponse accept(Long applicationId, Long requesterId) {
         Application application = findPending(applicationId);
 
-        Post post = postRepository.findByIdAndDeletedFalse(application.getPostId())
+        // ★ 기존 findByIdAndDeletedFalse → Lock 버전으로 교체
+        Post post = postRepository.findByIdAndDeletedFalseWithLock(application.getPostId())
                 .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
 
         if (!post.getMemberId().equals(requesterId)) {
