@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh pr create --title 'refactor: 차량 옵션 테이블 통합 및 코드 품질 개선' --base main --head feat/4-드라이버등록api --body ':*)"
+    ]
+  }
+}

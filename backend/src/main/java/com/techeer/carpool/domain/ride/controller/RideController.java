@@ -1,6 +1,7 @@
 package com.techeer.carpool.domain.ride.controller;
 
 import com.techeer.carpool.domain.ride.dto.*;
+import com.techeer.carpool.domain.ride.service.RideHistoryService;
 import com.techeer.carpool.domain.ride.service.RideService;
 import com.techeer.carpool.global.common.ApiResponse;
 import jakarta.validation.Valid;
@@ -18,6 +19,7 @@ import java.util.List;
 public class RideController {
 
     private final RideService rideService;
+    private final RideHistoryService rideHistoryService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<RideResponse>> createRide(
@@ -34,10 +36,24 @@ public class RideController {
         return ResponseEntity.ok(ApiResponse.of("내 운행 목록 조회 성공", rideService.getMyRidesAsDriver(driverId)));
     }
 
+    @GetMapping("/me/history")
+    public ResponseEntity<ApiResponse<List<RideHistoryResponse>>> getMyHistory(Authentication authentication) {
+        Long driverId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(ApiResponse.of("운행 이력 조회 성공", rideHistoryService.getMyHistory(driverId)));
+    }
+
     @GetMapping("/me/passenger")
     public ResponseEntity<ApiResponse<List<RideResponse>>> getMyRidesAsPassenger(Authentication authentication) {
         Long passengerId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(ApiResponse.of("내 탑승 내역 조회 성공", rideService.getMyRidesAsPassenger(passengerId)));
+    }
+
+    @GetMapping("/{rideId}/history")
+    public ResponseEntity<ApiResponse<RideDetailHistoryResponse>> getHistoryDetail(
+            @PathVariable Long rideId,
+            Authentication authentication) {
+        Long driverId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(ApiResponse.of("운행 상세 기록 조회 성공", rideHistoryService.getHistoryDetail(rideId, driverId)));
     }
 
     @GetMapping("/{rideId}")
