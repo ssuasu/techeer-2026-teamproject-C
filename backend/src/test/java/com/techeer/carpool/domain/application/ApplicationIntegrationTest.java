@@ -14,7 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.Mock;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,9 +39,9 @@ class ApplicationIntegrationTest {
     @Autowired MemberRepository memberRepository;
     @Autowired JwtTokenProvider jwtTokenProvider;
 
-    @MockBean RefreshTokenRedisRepository refreshTokenRedisRepository;
-    @MockBean BlacklistRedisRepository blacklistRedisRepository;
-    @MockBean com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher notificationPublisher;
+    @Mock RefreshTokenRedisRepository refreshTokenRedisRepository;
+    @Mock BlacklistRedisRepository blacklistRedisRepository;
+    @Mock com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher notificationPublisher;
 
     private Long ownerId;
     private Long applicant1Id;

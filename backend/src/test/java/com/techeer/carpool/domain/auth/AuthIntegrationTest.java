@@ -12,7 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,8 +40,8 @@ class AuthIntegrationTest {
     @Autowired PasswordEncoder passwordEncoder;
 
     // Redis는 테스트 환경에 없으므로 MockBean으로 격리
-    @MockBean RefreshTokenRedisRepository refreshTokenRedisRepository;
-    @MockBean BlacklistRedisRepository blacklistRedisRepository;
+    @MockitoBean RefreshTokenRedisRepository refreshTokenRedisRepository;
+    @MockitoBean BlacklistRedisRepository blacklistRedisRepository;
 
     @BeforeEach
     void setUp() {
