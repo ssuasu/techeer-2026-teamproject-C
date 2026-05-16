@@ -5,10 +5,9 @@ spring:
     name: carpool
 
   datasource:
-    # 도커에 적은 정보와 똑같이 맞춥니다.
-    url: jdbc:postgresql://localhost:5432/carpool
-    username: user
-    password: password
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/carpool}
+    username: ${DB_USERNAME:user}
+    password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
