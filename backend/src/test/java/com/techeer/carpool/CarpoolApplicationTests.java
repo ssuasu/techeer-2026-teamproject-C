@@ -4,14 +4,14 @@ import com.techeer.carpool.domain.auth.repository.BlacklistRedisRepository;
 import com.techeer.carpool.domain.auth.repository.RefreshTokenRedisRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.Mock;
 
 @SpringBootTest
 class CarpoolApplicationTests {
 
-	@MockBean RefreshTokenRedisRepository refreshTokenRedisRepository;
-	@MockBean BlacklistRedisRepository blacklistRedisRepository;
-	@MockBean com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher notificationPublisher;
+	@Mock RefreshTokenRedisRepository refreshTokenRedisRepository;
+	@Mock BlacklistRedisRepository blacklistRedisRepository;
+	@Mock com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher notificationPublisher;
 
 	@Test
 	void contextLoads() {
