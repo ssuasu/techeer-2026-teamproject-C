@@ -24,3 +24,14 @@ jwt:
   access-token-expiration: 900000      # 15분
   refresh-token-expiration: 604800000  # 7일
   cookie-secure: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus"
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
