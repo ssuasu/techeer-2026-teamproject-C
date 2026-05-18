@@ -406,9 +406,13 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .carNumber("12가3456")
                 .build());
 
+        VehicleOption adminVehicle = vehicleOptions.stream()
+                .filter(v -> "기아".equals(v.getBrand()) && "K5".equals(v.getModel()))
+                .findFirst()
+                .orElse(vehicleOptions.get(0));
         driverRepository.save(Driver.builder()
                 .memberId(admin.getId())
-                .vehicleOptionId(vehicleOptions.get(8).getId())
+                .vehicleOptionId(adminVehicle.getId())
                 .carNumber("99나8765")
                 .build());
     }

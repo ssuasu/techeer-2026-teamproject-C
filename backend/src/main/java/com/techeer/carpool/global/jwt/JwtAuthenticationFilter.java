@@ -1,6 +1,8 @@
 package com.techeer.carpool.global.jwt;
 
 import com.techeer.carpool.domain.auth.repository.BlacklistRedisRepository;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,24 +30,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
 
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-            // Redis 장애 시 fail-open: 블랙리스트 체크 실패해도 요청 허용
+        if (StringUtils.hasText(token)) {
             try {
-                if (blacklistRedisRepository.isBlacklisted(token)) {
+                if (isBlacklisted(token)) {
                     filterChain.doFilter(request, response);
                     return;
                 }
-            } catch (Exception e) {
-                log.warn("Redis 블랙리스트 조회 실패, 요청 허용: {}", e.getMessage());
+                Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(memberId, null, List.of());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (ExpiredJwtException e) {
+                request.setAttribute("tokenError", "AUTH_005");
+            } catch (JwtException | IllegalArgumentException e) {
+                request.setAttribute("tokenError", "AUTH_004");
             }
-
-            Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(memberId, null, List.of());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isBlacklisted(String token) {
+        try {
+            return blacklistRedisRepository.isBlacklisted(token);
+        } catch (Exception e) {
+            log.error("Redis 블랙리스트 조회 실패 — 로그아웃된 토큰이 허용될 수 있음: {}", e.getMessage());
+            return false;
+        }
     }
 
     public String resolveToken(HttpServletRequest request) {
