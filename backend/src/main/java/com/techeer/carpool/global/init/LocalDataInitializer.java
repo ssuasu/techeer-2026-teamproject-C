@@ -1,27 +1,27 @@
 package com.techeer.carpool.global.init;
 
-import com.techeer.carpool.domain.application.entity.Application;
-import com.techeer.carpool.domain.application.repository.ApplicationRepository;
-import com.techeer.carpool.domain.comment.entity.Comment;
-import com.techeer.carpool.domain.comment.repository.CommentRepository;
-import com.techeer.carpool.domain.driver.entity.Driver;
-import com.techeer.carpool.domain.driver.repository.DriverRepository;
+import com.techeer.carpool.domain.post.application.entity.Application;
+import com.techeer.carpool.domain.post.application.repository.ApplicationRepository;
+import com.techeer.carpool.domain.post.comment.entity.Comment;
+import com.techeer.carpool.domain.post.comment.repository.CommentRepository;
+import com.techeer.carpool.domain.member.driver.entity.Driver;
+import com.techeer.carpool.domain.member.driver.repository.DriverRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.entity.PostStatus;
 import com.techeer.carpool.domain.post.repository.PostRepository;
-import com.techeer.carpool.domain.review.entity.Review;
-import com.techeer.carpool.domain.review.repository.ReviewRepository;
+import com.techeer.carpool.domain.ride.review.entity.Review;
+import com.techeer.carpool.domain.ride.review.repository.ReviewRepository;
 import com.techeer.carpool.domain.ride.entity.Ride;
 import com.techeer.carpool.domain.ride.entity.RidePassenger;
 import com.techeer.carpool.domain.ride.entity.RideStatus;
 import com.techeer.carpool.domain.ride.entity.PassengerStatus;
 import com.techeer.carpool.domain.ride.repository.RidePassengerRepository;
 import com.techeer.carpool.domain.ride.repository.RideRepository;
-import com.techeer.carpool.domain.vehicle.entity.CarColor;
-import com.techeer.carpool.domain.vehicle.entity.VehicleOption;
-import com.techeer.carpool.domain.vehicle.repository.VehicleOptionRepository;
+import com.techeer.carpool.domain.member.vehicle.entity.CarColor;
+import com.techeer.carpool.domain.member.vehicle.entity.VehicleOption;
+import com.techeer.carpool.domain.member.vehicle.repository.VehicleOptionRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -343,6 +343,8 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .rating(5)
                 .comment("운전이 안전하고 친절했어요! 다음에도 이용하고 싶습니다.")
                 .build());
+        test.addRating(5);
+        memberRepository.save(test);
 
         // ─── COMPLETED + 평점 미등록 ───
         // admin이 드라이버, test가 탑승 완료 + 평점 안 남김 → "★ 평가하기" 버튼 표시
