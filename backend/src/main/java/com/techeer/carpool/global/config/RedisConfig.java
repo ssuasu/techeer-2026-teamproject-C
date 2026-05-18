@@ -1,6 +1,8 @@
 package com.techeer.carpool.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techeer.carpool.domain.notification.subscriber.RedisNotificationSubscriber;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -10,20 +12,28 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 public class RedisConfig {
 
     // StringRedisTemplate은 Spring Boot 자동 구성 사용 (별도 빈 불필요)
 
-    // 알림 페이로드 직렬화용 (JSON)
+    // Boot가 ObjectMapper를 자동 구성하지 않는 환경(테스트 등)을 위한 폴백
     @Bean
-    public RedisTemplate<String, Object> notificationRedisTemplate(RedisConnectionFactory factory) {
+    @ConditionalOnMissingBean(ObjectMapper.class)
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
+
+    // 알림 페이로드 직렬화용 (JSON) — Boot가 자동 구성한 ObjectMapper 주입
+    @Bean
+    public RedisTemplate<String, Object> notificationRedisTemplate(
+            RedisConnectionFactory factory,
+            ObjectMapper objectMapper) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         return template;
     }
 
@@ -39,11 +49,5 @@ public class RedisConfig {
                 new PatternTopic("notification:*")
         );
         return container;
-    }
-
-    // JSON 직렬화/역직렬화
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
     }
 }
