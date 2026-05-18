@@ -1,7 +1,7 @@
 package com.techeer.carpool.domain.application;
 
 import tools.jackson.databind.ObjectMapper;
-import com.techeer.carpool.domain.application.repository.ApplicationRepository;
+import com.techeer.carpool.domain.post.application.repository.ApplicationRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.domain.post.entity.Post;
