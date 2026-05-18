@@ -7,7 +7,9 @@ import com.techeer.carpool.domain.post.application.repository.ApplicationReposit
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.domain.notification.dto.NotificationPayload;
+import com.techeer.carpool.domain.notification.entity.Notification;
 import com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher;
+import com.techeer.carpool.domain.notification.service.NotificationService;
 import com.techeer.carpool.domain.notification.type.NotificationType;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.repository.PostRepository;
@@ -27,6 +29,7 @@ public class ApplicationStatusService {
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
     private final RedisNotificationPublisher notificationPublisher;
+    private final NotificationService notificationService;
 
     @Transactional
     public ApplicationResponse accept(Long applicationId, Long requesterId) {
@@ -46,6 +49,7 @@ public class ApplicationStatusService {
         application.accept();
         post.incrementPassengers();
 
+        notificationService.save(Notification.ofApplicationAccepted(application.getApplicantId(), application.getPostId()));
         notificationPublisher.publish(application.getApplicantId(), NotificationPayload.builder()
                 .type(NotificationType.APPLICATION_ACCEPTED)
                 .message("카풀 신청이 승인되었습니다.")
@@ -68,6 +72,7 @@ public class ApplicationStatusService {
 
         application.reject();
 
+        notificationService.save(Notification.ofApplicationRejected(application.getApplicantId(), application.getPostId()));
         notificationPublisher.publish(application.getApplicantId(), NotificationPayload.builder()
                 .type(NotificationType.APPLICATION_REJECTED)
                 .message("카풀 신청이 거절되었습니다.")

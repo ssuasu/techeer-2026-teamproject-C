@@ -5,7 +5,9 @@ import com.techeer.carpool.domain.post.application.entity.ApplicationStatus;
 import com.techeer.carpool.domain.post.application.repository.ApplicationRepository;
 import com.techeer.carpool.domain.member.driver.repository.DriverRepository;
 import com.techeer.carpool.domain.notification.dto.NotificationPayload;
+import com.techeer.carpool.domain.notification.entity.Notification;
 import com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher;
+import com.techeer.carpool.domain.notification.service.NotificationService;
 import com.techeer.carpool.domain.notification.type.NotificationType;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.entity.PostStatus;
@@ -37,6 +39,7 @@ public class RideService {
     private final DriverRepository driverRepository;
     private final ApplicationRepository applicationRepository;
     private final RedisNotificationPublisher notificationPublisher;
+    private final NotificationService notificationService;
 
     @Transactional
     public RideResponse createRide(RideCreateRequest request, Long driverId) {
@@ -85,6 +88,9 @@ public class RideService {
         List<Long> passengerIds = ride.getPassengers().stream()
                 .map(RidePassenger::getPassengerId)
                 .collect(Collectors.toList());
+        notificationService.saveAll(passengerIds.stream()
+                .map(id -> Notification.ofRideStarted(id, rideId))
+                .collect(Collectors.toList()));
         notificationPublisher.publishToMany(passengerIds, NotificationPayload.builder()
                 .type(NotificationType.RIDE_STARTED)
                 .message("카풀 운행이 시작되었습니다.")
@@ -104,6 +110,9 @@ public class RideService {
         List<Long> passengerIds = ride.getPassengers().stream()
                 .map(RidePassenger::getPassengerId)
                 .collect(Collectors.toList());
+        notificationService.saveAll(passengerIds.stream()
+                .map(id -> Notification.ofRideEnded(id, rideId))
+                .collect(Collectors.toList()));
         notificationPublisher.publishToMany(passengerIds, NotificationPayload.builder()
                 .type(NotificationType.RIDE_ENDED)
                 .message("카풀 운행이 종료되었습니다.")
