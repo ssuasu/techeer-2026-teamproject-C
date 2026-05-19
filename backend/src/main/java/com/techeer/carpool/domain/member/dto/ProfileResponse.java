@@ -13,6 +13,7 @@ public class ProfileResponse {
     private Long id;
     private String email;
     private String nickname;
+    private double averageRating;
     private LocalDateTime createdAt;
 
     public static ProfileResponse from(Member member) {
@@ -20,6 +21,7 @@ public class ProfileResponse {
                 .id(member.getId())
                 .email(member.getEmail())
                 .nickname(member.getNickname())
+                .averageRating(member.getAverageRating())
                 .createdAt(member.getCreatedAt())
                 .build();
     }
