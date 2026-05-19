@@ -41,5 +41,5 @@ public class PostUpdateRequest {
     private boolean autoAccept;
     private PostStatus status;
     private Integer price;
-    private List<String> tags;
+    private List<Long> tagIds;
 }

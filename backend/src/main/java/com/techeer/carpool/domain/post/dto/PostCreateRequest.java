@@ -39,5 +39,5 @@ public class PostCreateRequest {
     private String description;
     private boolean autoAccept;
     private Integer price;
-    private List<String> tags;
+    private List<Long> tagIds;
 }

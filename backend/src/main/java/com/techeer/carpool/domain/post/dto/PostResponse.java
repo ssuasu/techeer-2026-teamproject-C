@@ -29,7 +29,7 @@ public class PostResponse {
     private String description;
     private boolean autoAccept;
     private Integer price;
-    private List<String> tags;
+    private List<TagResponse> tags;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -52,7 +52,7 @@ public class PostResponse {
                 .description(post.getDescription())
                 .autoAccept(post.isAutoAccept())
                 .price(post.getPrice())
-                .tags(post.getTags())
+                .tags(post.getTags().stream().map(TagResponse::from).toList())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
