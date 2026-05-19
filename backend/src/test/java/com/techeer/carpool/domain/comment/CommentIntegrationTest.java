@@ -1,9 +1,9 @@
 package com.techeer.carpool.domain.comment;
 
 import tools.jackson.databind.ObjectMapper;
-import com.techeer.carpool.domain.post.comment.dto.CommentCreateRequest;
-import com.techeer.carpool.domain.post.comment.entity.Comment;
-import com.techeer.carpool.domain.post.comment.repository.CommentRepository;
+import com.techeer.carpool.domain.comment.dto.CommentCreateRequest;
+import com.techeer.carpool.domain.comment.entity.Comment;
+import com.techeer.carpool.domain.comment.repository.CommentRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.domain.post.entity.Post;

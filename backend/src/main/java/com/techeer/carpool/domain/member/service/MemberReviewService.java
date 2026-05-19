@@ -2,8 +2,8 @@ package com.techeer.carpool.domain.member.service;
 
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
-import com.techeer.carpool.domain.ride.review.dto.ReviewResponse;
-import com.techeer.carpool.domain.ride.review.repository.ReviewRepository;
+import com.techeer.carpool.domain.review.dto.ReviewResponse;
+import com.techeer.carpool.domain.review.repository.ReviewRepository;
 import com.techeer.carpool.global.exception.CarpoolException;
 import com.techeer.carpool.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;

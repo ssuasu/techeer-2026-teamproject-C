@@ -1,12 +1,12 @@
 package com.techeer.carpool.domain.driver;
 
 import tools.jackson.databind.ObjectMapper;
-import com.techeer.carpool.domain.member.driver.repository.DriverRepository;
+import com.techeer.carpool.domain.driver.repository.DriverRepository;
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
-import com.techeer.carpool.domain.member.vehicle.entity.CarColor;
-import com.techeer.carpool.domain.member.vehicle.entity.VehicleOption;
-import com.techeer.carpool.domain.member.vehicle.repository.VehicleOptionRepository;
+import com.techeer.carpool.domain.driver.entity.CarColor;
+import com.techeer.carpool.domain.driver.entity.VehicleOption;
+import com.techeer.carpool.domain.driver.repository.VehicleOptionRepository;
 import com.techeer.carpool.domain.auth.repository.BlacklistRedisRepository;
 import com.techeer.carpool.domain.auth.repository.RefreshTokenRedisRepository;
 import org.junit.jupiter.api.AfterEach;
