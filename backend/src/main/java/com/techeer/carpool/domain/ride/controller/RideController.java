@@ -1,9 +1,9 @@
 package com.techeer.carpool.domain.ride.controller;
 
 import com.techeer.carpool.domain.ride.dto.*;
-import com.techeer.carpool.domain.ride.review.dto.ReviewCreateRequest;
-import com.techeer.carpool.domain.ride.review.dto.ReviewResponse;
-import com.techeer.carpool.domain.ride.review.service.ReviewCreateService;
+import com.techeer.carpool.domain.review.dto.ReviewCreateRequest;
+import com.techeer.carpool.domain.review.dto.ReviewResponse;
+import com.techeer.carpool.domain.review.service.ReviewCreateService;
 import com.techeer.carpool.domain.ride.service.RideHistoryService;
 import com.techeer.carpool.domain.ride.service.RideService;
 import com.techeer.carpool.global.common.ApiResponse;

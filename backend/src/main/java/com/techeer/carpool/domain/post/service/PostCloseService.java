@@ -1,9 +1,9 @@
 package com.techeer.carpool.domain.post.service;
 
-import com.techeer.carpool.domain.post.application.entity.Application;
-import com.techeer.carpool.domain.post.application.entity.ApplicationStatus;
-import com.techeer.carpool.domain.post.application.repository.ApplicationRepository;
-import com.techeer.carpool.domain.member.driver.repository.DriverRepository;
+import com.techeer.carpool.domain.application.entity.Application;
+import com.techeer.carpool.domain.application.entity.ApplicationStatus;
+import com.techeer.carpool.domain.application.repository.ApplicationRepository;
+import com.techeer.carpool.domain.driver.repository.DriverRepository;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.entity.PostStatus;
 import com.techeer.carpool.domain.post.repository.PostRepository;

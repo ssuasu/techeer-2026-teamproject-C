@@ -5,7 +5,7 @@ import com.techeer.carpool.domain.member.dto.ProfileUpdateRequest;
 import com.techeer.carpool.domain.member.service.MemberProfileService;
 import com.techeer.carpool.domain.member.service.MemberReviewService;
 import com.techeer.carpool.domain.member.service.MemberWithdrawService;
-import com.techeer.carpool.domain.ride.review.dto.ReviewResponse;
+import com.techeer.carpool.domain.review.dto.ReviewResponse;
 import com.techeer.carpool.global.common.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
