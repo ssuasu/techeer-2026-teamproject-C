@@ -139,7 +139,7 @@ class AuthIntegrationTest {
                                 "password", "password123"
                         ))))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("AUTH_002"));
+                .andExpect(jsonPath("$.code").value("MEMBER_002"));
     }
 
     @Test
@@ -177,7 +177,7 @@ class AuthIntegrationTest {
                                 "password", "password123"
                         ))))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("AUTH_002"));
+                .andExpect(jsonPath("$.code").value("MEMBER_002"));
     }
 
     // ── 토큰 재발급 ──────────────────────────────────────────
