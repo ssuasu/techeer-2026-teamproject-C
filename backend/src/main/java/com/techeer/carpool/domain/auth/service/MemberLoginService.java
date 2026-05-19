@@ -22,8 +22,7 @@ public class MemberLoginService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public AuthTokens login(LoginRequest request) {
-        Member member = memberRepository.findByEmail(request.getEmail())
-                .filter(m -> !m.isDeleted())
+        Member member = memberRepository.findByEmailAndDeletedFalse(request.getEmail())
                 .orElseThrow(() -> new CarpoolException(ErrorCode.MEMBER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
