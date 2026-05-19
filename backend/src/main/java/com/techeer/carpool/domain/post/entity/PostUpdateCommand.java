@@ -17,5 +17,5 @@ public record PostUpdateCommand(
         boolean autoAccept,
         PostStatus status,
         Integer price,
-        List<String> tags
+        List<Tag> tags
 ) {}

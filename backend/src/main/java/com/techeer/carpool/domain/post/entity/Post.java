@@ -63,10 +63,13 @@ public class Post extends SoftDeletableEntity {
 
     private Integer price;
 
-    @ElementCollection
-    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"))
-    @Column(name = "tag")
-    private List<String> tags = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "post_tags",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private List<Tag> tags = new ArrayList<>();
 
     @PrePersist
     private void prePersist() {
@@ -80,7 +83,7 @@ public class Post extends SoftDeletableEntity {
                 String destinationLocation, Double destinationLat, Double destinationLng,
                 LocalDateTime departureTime, int maxPassengers,
                 String description, boolean autoAccept,
-                Integer price, List<String> tags) {
+                Integer price, List<Tag> tags) {
         this.memberId = memberId;
         this.title = title;
         this.departureLocation = departureLocation;
