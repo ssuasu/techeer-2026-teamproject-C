@@ -8,6 +8,10 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 jwt:
   secret: test-secret-key-for-unit-testing-purposes-only!!
@@ -17,3 +21,8 @@ jwt:
 
 cors:
   allowed-origins: http://localhost:5173
+
+management:
+  health:
+    redis:
+      enabled: false
