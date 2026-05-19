@@ -18,11 +18,7 @@ public class MemberProfileService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public ProfileResponse getProfile(Long requesterId, Long memberId) {
-        if (!requesterId.equals(memberId)) {
-            throw new CarpoolException(ErrorCode.MEMBER_FORBIDDEN);
-        }
-
+    public ProfileResponse getProfile(Long memberId) {
         Member member = memberRepository.findByIdAndDeletedFalse(memberId)
                 .orElseThrow(() -> new CarpoolException(ErrorCode.MEMBER_NOT_FOUND));
         return ProfileResponse.from(member);
