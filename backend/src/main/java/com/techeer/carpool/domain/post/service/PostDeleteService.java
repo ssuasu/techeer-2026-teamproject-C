@@ -1,8 +1,8 @@
 package com.techeer.carpool.domain.post.service;
 
-import com.techeer.carpool.domain.post.application.entity.Application;
-import com.techeer.carpool.domain.post.application.entity.ApplicationStatus;
-import com.techeer.carpool.domain.post.application.repository.ApplicationRepository;
+import com.techeer.carpool.domain.application.entity.Application;
+import com.techeer.carpool.domain.application.entity.ApplicationStatus;
+import com.techeer.carpool.domain.application.repository.ApplicationRepository;
 import com.techeer.carpool.domain.notification.dto.NotificationPayload;
 import com.techeer.carpool.domain.notification.entity.Notification;
 import com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher;
