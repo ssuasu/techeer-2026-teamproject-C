@@ -1,4 +1,4 @@
-package com.techeer.carpool.domain.member.service;
+package com.techeer.carpool.domain.review.service;
 
 import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class MemberReviewService {
+public class ReviewQueryService {
 
     private final ReviewRepository reviewRepository;
     private final MemberRepository memberRepository;

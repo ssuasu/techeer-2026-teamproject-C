@@ -1,9 +1,6 @@
 package com.techeer.carpool.domain.ride.controller;
 
 import com.techeer.carpool.domain.ride.dto.*;
-import com.techeer.carpool.domain.review.dto.ReviewCreateRequest;
-import com.techeer.carpool.domain.review.dto.ReviewResponse;
-import com.techeer.carpool.domain.review.service.ReviewCreateService;
 import com.techeer.carpool.domain.ride.service.RideHistoryService;
 import com.techeer.carpool.domain.ride.service.RideService;
 import com.techeer.carpool.global.common.ApiResponse;
@@ -23,7 +20,6 @@ public class RideController {
 
     private final RideService rideService;
     private final RideHistoryService rideHistoryService;
-    private final ReviewCreateService reviewCreateService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<RideResponse>> createRide(
@@ -118,13 +114,4 @@ public class RideController {
         return ResponseEntity.ok(ApiResponse.of("하차가 확인되었습니다.", rideService.dropOffPassenger(rideId, applicationId, driverId)));
     }
 
-    @PostMapping("/{rideId}/reviews")
-    public ResponseEntity<ApiResponse<ReviewResponse>> createReview(
-            @PathVariable Long rideId,
-            @RequestBody @Valid ReviewCreateRequest request,
-            Authentication authentication) {
-        Long reviewerId = (Long) authentication.getPrincipal();
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.of("평가가 등록되었습니다.", reviewCreateService.createReview(rideId, request, reviewerId)));
-    }
 }
