@@ -2,7 +2,6 @@ package com.techeer.carpool.domain.post.controller;
 
 import com.techeer.carpool.domain.post.dto.PostCreateRequest;
 import com.techeer.carpool.domain.post.dto.PostDetailResponse;
-import com.techeer.carpool.domain.post.dto.PostResponse;
 import com.techeer.carpool.domain.post.dto.PostSummaryResponse;
 import com.techeer.carpool.domain.post.dto.PostUpdateRequest;
 import com.techeer.carpool.domain.post.service.PostCloseService;
@@ -26,7 +25,7 @@ public class PostController {
     private final PostCloseService postCloseService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<PostResponse>> createPost(
+    public ResponseEntity<ApiResponse<PostDetailResponse>> createPost(
             @Valid @RequestBody PostCreateRequest request,
             Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
@@ -45,7 +44,7 @@ public class PostController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PostResponse>> updatePost(
+    public ResponseEntity<ApiResponse<PostDetailResponse>> updatePost(
             @PathVariable Long id,
             @Valid @RequestBody PostUpdateRequest request,
             Authentication authentication) {

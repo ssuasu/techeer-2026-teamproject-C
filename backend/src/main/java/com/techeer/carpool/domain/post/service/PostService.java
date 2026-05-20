@@ -12,7 +12,6 @@ import com.techeer.carpool.domain.notification.service.NotificationService;
 import com.techeer.carpool.domain.notification.type.NotificationType;
 import com.techeer.carpool.domain.post.dto.PostCreateRequest;
 import com.techeer.carpool.domain.post.dto.PostDetailResponse;
-import com.techeer.carpool.domain.post.dto.PostResponse;
 import com.techeer.carpool.domain.post.dto.PostSummaryResponse;
 import com.techeer.carpool.domain.post.dto.PostUpdateRequest;
 import com.techeer.carpool.domain.post.entity.Post;
@@ -43,7 +42,7 @@ public class PostService {
     private final NotificationService notificationService;
 
     @Transactional
-    public PostResponse createPost(PostCreateRequest request, Long memberId) {
+    public PostDetailResponse createPost(PostCreateRequest request, Long memberId) {
         List<Tag> tags = resolveTags(request.getTagIds());
         Post post = Post.builder()
                 .memberId(memberId)
@@ -62,7 +61,7 @@ public class PostService {
                 .tags(tags)
                 .build();
         Post saved = postRepository.save(post);
-        return PostResponse.from(saved, fetchNickname(saved.getMemberId()));
+        return PostDetailResponse.from(saved, fetchNickname(saved.getMemberId()));
     }
 
     @Transactional(readOnly = true)
@@ -84,7 +83,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponse updatePost(Long id, PostUpdateRequest request, Long requesterId) {
+    public PostDetailResponse updatePost(Long id, PostUpdateRequest request, Long requesterId) {
         Post post = postRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
         validateOwner(post, requesterId);
@@ -105,7 +104,7 @@ public class PostService {
                 request.getPrice(),
                 tags
         ));
-        return PostResponse.from(post, fetchNickname(post.getMemberId()));
+        return PostDetailResponse.from(post, fetchNickname(post.getMemberId()));
     }
 
     @Transactional
