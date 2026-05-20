@@ -10,7 +10,9 @@ import com.techeer.carpool.domain.member.entity.Member;
 import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.entity.PostStatus;
+import com.techeer.carpool.domain.post.entity.Tag;
 import com.techeer.carpool.domain.post.repository.PostRepository;
+import com.techeer.carpool.domain.post.repository.TagRepository;
 import com.techeer.carpool.domain.review.entity.Review;
 import com.techeer.carpool.domain.review.repository.ReviewRepository;
 import com.techeer.carpool.domain.ride.entity.Ride;
@@ -32,6 +34,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Profile("local")
@@ -49,6 +53,7 @@ public class LocalDataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final VehicleOptionRepository vehicleOptionRepository;
     private final DriverRepository driverRepository;
+    private final TagRepository tagRepository;
 
     @Override
     public void run(String... args) {
@@ -57,9 +62,11 @@ public class LocalDataInitializer implements CommandLineRunner {
 
         seedDrivers(test, admin, initVehicleOptions());
 
-        List<Post> allPosts = postRepository.findByDeletedFalseOrderByCreatedAtDesc();
+        Map<String, Tag> tagMap = seedTags();
+
+        List<Post> allPosts = postRepository.findByDeletedFalseWithTagsOrderByCreatedAtDesc();
         if (allPosts.isEmpty()) {
-            allPosts = seedPosts(test, admin);
+            allPosts = seedPosts(test, admin, tagMap);
         }
 
         if (rideRepository.count() == 0) {
@@ -71,9 +78,27 @@ public class LocalDataInitializer implements CommandLineRunner {
         log.info("[LocalDataInitializer] 초기 데이터 생성 완료");
     }
 
+    // ── Tags ───────────────────────────────────────────────────────────────────
+
+    private Map<String, Tag> seedTags() {
+        if (tagRepository.count() > 0) {
+            return tagRepository.findAll().stream()
+                    .collect(Collectors.toMap(Tag::getName, t -> t));
+        }
+        List<Tag> tags = tagRepository.saveAll(List.of(
+                Tag.builder().name("금연").build(),
+                Tag.builder().name("조용한 분위기").build(),
+                Tag.builder().name("반려동물").build(),
+                Tag.builder().name("짐 있음").build(),
+                Tag.builder().name("여성전용").build(),
+                Tag.builder().name("흡연").build()
+        ));
+        return tags.stream().collect(Collectors.toMap(Tag::getName, t -> t));
+    }
+
     // ── Posts ──────────────────────────────────────────────────────────────────
 
-    private List<Post> seedPosts(Member test, Member admin) {
+    private List<Post> seedPosts(Member test, Member admin, Map<String, Tag> tagMap) {
 
         // ① OPEN — 신청 모집 중 (admin 드라이버)
         Post p1 = postRepository.save(Post.builder()
@@ -88,7 +113,7 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .description("정시 출발합니다. 짐 많으신 분은 미리 말씀해 주세요.")
                 .autoAccept(false)
                 .price(5000)
-                .tags(List.of("NON_SMOKER", "QUIET"))
+                .tags(List.of(tagMap.get("금연"), tagMap.get("조용한 분위기")))
                 .build());
 
         // ② OPEN — 신청 모집 중 (test 드라이버)
@@ -104,7 +129,7 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .description("경유지 없이 직행입니다.")
                 .autoAccept(true)
                 .price(3000)
-                .tags(List.of("PET_OK", "LUGGAGE_OK"))
+                .tags(List.of(tagMap.get("반려동물"), tagMap.get("짐 있음")))
                 .build());
 
         // ③ CLOSED → SCHEDULED 운행 (약 20분 후 출발 — 30분 전 위치 공유 테스트용, test 드라이버)
@@ -120,7 +145,7 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .description("출발 20분 전 — 위치 공유 창 테스트용입니다.")
                 .autoAccept(false)
                 .price(4000)
-                .tags(List.of("NON_SMOKER"))
+                .tags(List.of(tagMap.get("금연")))
                 .build());
 
         // ④ CLOSED → IN_PROGRESS 운행 중 (admin 드라이버, test 탑승 중)
@@ -136,7 +161,7 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .description("현재 운행 중 — ActiveRidePanel 테스트용")
                 .autoAccept(true)
                 .price(3500)
-                .tags(List.of("QUIET"))
+                .tags(List.of(tagMap.get("조용한 분위기")))
                 .build());
 
         // ⑤ CLOSED → COMPLETED (test 드라이버, admin 탑승 완료 + 평점 등록됨)
@@ -167,7 +192,7 @@ public class LocalDataInitializer implements CommandLineRunner {
                 .description("과거 완료 운행 — 평점 미등록 케이스 (★ 평가하기 버튼 표시)")
                 .autoAccept(true)
                 .price(15000)
-                .tags(List.of("LUGGAGE_OK"))
+                .tags(List.of(tagMap.get("짐 있음")))
                 .build());
 
         // test 유저 소유 게시글 추가 (관리자가 신청할 대상)

@@ -44,7 +44,9 @@ public enum ErrorCode {
     REVIEW_RIDE_NOT_COMPLETED("REVIEW_004", "완료된 운행만 평가할 수 있습니다.", HttpStatus.CONFLICT),
 
     NOTIFICATION_NOT_FOUND("NOTIFICATION_001", "알림을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    NOTIFICATION_FORBIDDEN("NOTIFICATION_002", "알림 접근 권한이 없습니다.", HttpStatus.FORBIDDEN);
+    NOTIFICATION_FORBIDDEN("NOTIFICATION_002", "알림 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
+
+    TAG_NOT_FOUND("TAG_001", "태그를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 
 
     private final String code;

@@ -25,7 +25,7 @@ public class PostReadService {
     private final MemberRepository memberRepository;
 
     public List<PostResponse> getAllPosts() {
-        List<Post> posts = postRepository.findByDeletedFalseOrderByCreatedAtDesc();
+        List<Post> posts = postRepository.findByDeletedFalseWithTagsOrderByCreatedAtDesc();
         Set<Long> memberIds = posts.stream().map(Post::getMemberId).collect(Collectors.toSet());
         Map<Long, String> nicknameMap = memberRepository.findAllById(memberIds).stream()
                 .collect(Collectors.toMap(Member::getId, Member::getNickname));

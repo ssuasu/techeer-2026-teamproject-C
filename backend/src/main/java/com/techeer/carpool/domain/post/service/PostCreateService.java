@@ -5,10 +5,14 @@ import com.techeer.carpool.domain.member.repository.MemberRepository;
 import com.techeer.carpool.domain.post.dto.PostCreateRequest;
 import com.techeer.carpool.domain.post.dto.PostResponse;
 import com.techeer.carpool.domain.post.entity.Post;
+import com.techeer.carpool.domain.post.entity.Tag;
 import com.techeer.carpool.domain.post.repository.PostRepository;
+import com.techeer.carpool.domain.post.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -16,9 +20,13 @@ public class PostCreateService {
 
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
+    private final TagRepository tagRepository;
 
     @Transactional
     public PostResponse createPost(PostCreateRequest request, Long memberId) {
+        List<Tag> tags = tagRepository.findAllByIdIn(
+                request.getTagIds() != null ? request.getTagIds() : List.of()
+        );
         Post post = Post.builder()
                 .memberId(memberId)
                 .title(request.getTitle())
@@ -33,7 +41,7 @@ public class PostCreateService {
                 .description(request.getDescription())
                 .autoAccept(request.isAutoAccept())
                 .price(request.getPrice())
-                .tags(request.getTags())
+                .tags(tags)
                 .build();
         Post saved = postRepository.save(post);
         String nickname = memberRepository.findById(saved.getMemberId())

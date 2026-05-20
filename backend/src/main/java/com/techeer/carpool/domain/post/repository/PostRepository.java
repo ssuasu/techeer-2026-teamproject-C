@@ -12,7 +12,8 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    List<Post> findByDeletedFalseOrderByCreatedAtDesc();
+    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.tags WHERE p.deleted = false ORDER BY p.createdAt DESC")
+    List<Post> findByDeletedFalseWithTagsOrderByCreatedAtDesc();
 
     Optional<Post> findByIdAndDeletedFalse(Long id);
 
