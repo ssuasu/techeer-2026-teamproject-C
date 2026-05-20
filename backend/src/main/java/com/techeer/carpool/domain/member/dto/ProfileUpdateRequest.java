@@ -16,7 +16,7 @@ public class ProfileUpdateRequest {
     private String newPassword;
 
     @AssertTrue(message = "비밀번호 변경 시 현재 비밀번호가 필요합니다.")
-    private boolean isPasswordChangeValid() {
+    public boolean isPasswordChangeValid() {
         return newPassword == null || (currentPassword != null && !currentPassword.isBlank());
     }
 }
