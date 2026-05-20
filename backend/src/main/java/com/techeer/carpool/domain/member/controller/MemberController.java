@@ -5,8 +5,6 @@ import com.techeer.carpool.domain.member.dto.ProfileUpdateRequest;
 import com.techeer.carpool.domain.member.service.MemberProfileService;
 import com.techeer.carpool.domain.member.service.MemberWithdrawService;
 import com.techeer.carpool.global.common.ApiResponse;
-import com.techeer.carpool.global.exception.CarpoolException;
-import com.techeer.carpool.global.exception.ErrorCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +20,7 @@ public class MemberController {
     private final MemberWithdrawService memberWithdrawService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProfileResponse>> getProfileById(
-            @PathVariable Long id,
-            Authentication authentication) {
-        Long requesterId = (Long) authentication.getPrincipal();
-        if (!requesterId.equals(id)) {
-            throw new CarpoolException(ErrorCode.MEMBER_FORBIDDEN);
-        }
+    public ResponseEntity<ApiResponse<ProfileResponse>> getProfileById(@PathVariable Long id) {
         ProfileResponse profile = memberProfileService.getProfile(id);
         return ResponseEntity.ok(ApiResponse.of("프로필을 조회했습니다.", profile));
     }

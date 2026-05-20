@@ -90,12 +90,12 @@ class MemberIntegrationTest {
     }
 
     @Test
-    @DisplayName("ID로 타인 프로필 조회 실패 - 403")
-    void getProfileById_other_forbidden() throws Exception {
+    @DisplayName("ID로 타인 프로필 조회 성공")
+    void getProfileById_other_success() throws Exception {
         mockMvc.perform(get("/api/v1/members/{id}", otherMemberId)
                         .header("Authorization", token))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("MEMBER_001"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(otherMemberId));
     }
 
     // ── 프로필 수정 ──────────────────────────────────────────

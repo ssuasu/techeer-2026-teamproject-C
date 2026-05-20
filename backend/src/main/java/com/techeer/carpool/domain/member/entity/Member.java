@@ -1,6 +1,8 @@
 package com.techeer.carpool.domain.member.entity;
 
 import com.techeer.carpool.global.common.entity.SoftDeletableEntity;
+import com.techeer.carpool.global.exception.CarpoolException;
+import com.techeer.carpool.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -41,6 +43,9 @@ public class Member extends SoftDeletableEntity {
     }
 
     public void addRating(int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new CarpoolException(ErrorCode.INVALID_INPUT);
+        }
         this.totalRatingSum += rating;
         this.reviewCount++;
     }
@@ -50,6 +55,9 @@ public class Member extends SoftDeletableEntity {
     }
 
     public void updateNickname(String nickname) {
+        if (nickname == null || nickname.isBlank()) {
+            throw new CarpoolException(ErrorCode.INVALID_INPUT);
+        }
         this.nickname = nickname;
     }
 
@@ -57,7 +65,6 @@ public class Member extends SoftDeletableEntity {
         this.password = encodedPassword;
     }
 
-    // 탈퇴 관련 로직 추가를 위해 유지
     public void withdraw() {
         delete();
     }
