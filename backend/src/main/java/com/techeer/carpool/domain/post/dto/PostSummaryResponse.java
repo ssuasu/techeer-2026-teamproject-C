@@ -1,0 +1,48 @@
+package com.techeer.carpool.domain.post.dto;
+
+import com.techeer.carpool.domain.post.entity.Post;
+import com.techeer.carpool.domain.post.entity.PostStatus;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Getter
+@Builder
+public class PostSummaryResponse {
+
+    private Long id;
+    private Long memberId;
+    private String nickname;
+    private String title;
+    private String departureLocation;
+    private String destinationLocation;
+    private LocalDateTime departureTime;
+    private int maxPassengers;
+    private int currentPassengers;
+    private PostStatus status;
+    private boolean autoAccept;
+    private Integer price;
+    private List<TagResponse> tags;
+    private LocalDateTime createdAt;
+
+    public static PostSummaryResponse from(Post post, String nickname) {
+        return PostSummaryResponse.builder()
+                .id(post.getId())
+                .memberId(post.getMemberId())
+                .nickname(nickname)
+                .title(post.getTitle())
+                .departureLocation(post.getDepartureLocation())
+                .destinationLocation(post.getDestinationLocation())
+                .departureTime(post.getDepartureTime())
+                .maxPassengers(post.getMaxPassengers())
+                .currentPassengers(post.getCurrentPassengers())
+                .status(post.getStatus())
+                .autoAccept(post.isAutoAccept())
+                .price(post.getPrice())
+                .tags(post.getTags().stream().map(TagResponse::from).toList())
+                .createdAt(post.getCreatedAt())
+                .build();
+    }
+}

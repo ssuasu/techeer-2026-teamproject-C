@@ -4,10 +4,14 @@ import com.techeer.carpool.domain.application.entity.Application;
 import com.techeer.carpool.domain.application.entity.ApplicationStatus;
 import com.techeer.carpool.domain.application.repository.ApplicationRepository;
 import com.techeer.carpool.domain.driver.repository.DriverRepository;
+import com.techeer.carpool.domain.notification.dto.NotificationPayload;
+import com.techeer.carpool.domain.notification.entity.Notification;
+import com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher;
+import com.techeer.carpool.domain.notification.service.NotificationService;
+import com.techeer.carpool.domain.notification.type.NotificationType;
 import com.techeer.carpool.domain.post.entity.Post;
 import com.techeer.carpool.domain.post.entity.PostStatus;
 import com.techeer.carpool.domain.post.repository.PostRepository;
-import com.techeer.carpool.domain.ride.dto.RideResponse;
 import com.techeer.carpool.domain.ride.entity.Ride;
 import com.techeer.carpool.domain.ride.entity.RidePassenger;
 import com.techeer.carpool.domain.ride.repository.RidePassengerRepository;
@@ -19,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,9 +35,11 @@ public class PostCloseService {
     private final RidePassengerRepository ridePassengerRepository;
     private final ApplicationRepository applicationRepository;
     private final DriverRepository driverRepository;
+    private final NotificationService notificationService;
+    private final RedisNotificationPublisher notificationPublisher;
 
     @Transactional
-    public RideResponse closePost(Long postId, Long requesterId) {
+    public void closePost(Long postId, Long requesterId) {
         driverRepository.findByMemberIdAndDeletedFalse(requesterId)
                 .orElseThrow(() -> new CarpoolException(ErrorCode.DRIVER_NOT_FOUND));
 
@@ -63,6 +70,16 @@ public class PostCloseService {
                 .collect(Collectors.toList());
         ridePassengerRepository.saveAll(passengers);
 
-        return RideResponse.from(ride, post);
+        List<Long> passengerIds = passengers.stream()
+                .map(RidePassenger::getPassengerId)
+                .collect(Collectors.toList());
+        notificationService.saveAll(passengerIds.stream()
+                .map(pid -> Notification.ofRideStarted(pid, ride.getId()))
+                .collect(Collectors.toList()));
+        notificationPublisher.publishToMany(passengerIds, NotificationPayload.builder()
+                .type(NotificationType.RIDE_STARTED)
+                .message("카풀이 시작되었습니다.")
+                .data(Map.of("rideId", ride.getId()))
+                .build());
     }
 }

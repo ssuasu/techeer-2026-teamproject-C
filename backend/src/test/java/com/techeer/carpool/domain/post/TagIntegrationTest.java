@@ -143,7 +143,7 @@ class TagIntegrationTest {
         Map<String, Object> updateBody = postBody(List.of(tag2.getId()));
         updateBody.put("status", "OPEN");
 
-        mockMvc.perform(put("/api/v1/posts/{id}", postId)
+        mockMvc.perform(patch("/api/v1/posts/{id}", postId)
                         .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateBody)))
@@ -160,7 +160,7 @@ class TagIntegrationTest {
         Map<String, Object> updateBody = postBody(List.of());
         updateBody.put("status", "OPEN");
 
-        mockMvc.perform(put("/api/v1/posts/{id}", postId)
+        mockMvc.perform(patch("/api/v1/posts/{id}", postId)
                         .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateBody)))

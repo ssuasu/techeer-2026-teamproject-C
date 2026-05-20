@@ -1,0 +1,158 @@
+package com.techeer.carpool.domain.post.service;
+
+import com.techeer.carpool.domain.application.entity.Application;
+import com.techeer.carpool.domain.application.entity.ApplicationStatus;
+import com.techeer.carpool.domain.application.repository.ApplicationRepository;
+import com.techeer.carpool.domain.member.entity.Member;
+import com.techeer.carpool.domain.member.repository.MemberRepository;
+import com.techeer.carpool.domain.notification.dto.NotificationPayload;
+import com.techeer.carpool.domain.notification.entity.Notification;
+import com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher;
+import com.techeer.carpool.domain.notification.service.NotificationService;
+import com.techeer.carpool.domain.notification.type.NotificationType;
+import com.techeer.carpool.domain.post.dto.PostCreateRequest;
+import com.techeer.carpool.domain.post.dto.PostDetailResponse;
+import com.techeer.carpool.domain.post.dto.PostResponse;
+import com.techeer.carpool.domain.post.dto.PostSummaryResponse;
+import com.techeer.carpool.domain.post.dto.PostUpdateRequest;
+import com.techeer.carpool.domain.post.entity.Post;
+import com.techeer.carpool.domain.post.entity.PostUpdateCommand;
+import com.techeer.carpool.domain.post.entity.Tag;
+import com.techeer.carpool.domain.post.repository.PostRepository;
+import com.techeer.carpool.domain.post.repository.TagRepository;
+import com.techeer.carpool.global.exception.CarpoolException;
+import com.techeer.carpool.global.exception.ErrorCode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class PostService {
+
+    private final PostRepository postRepository;
+    private final MemberRepository memberRepository;
+    private final TagRepository tagRepository;
+    private final ApplicationRepository applicationRepository;
+    private final RedisNotificationPublisher notificationPublisher;
+    private final NotificationService notificationService;
+
+    @Transactional
+    public PostResponse createPost(PostCreateRequest request, Long memberId) {
+        List<Tag> tags = resolveTags(request.getTagIds());
+        Post post = Post.builder()
+                .memberId(memberId)
+                .title(request.getTitle())
+                .departureLocation(request.getDepartureLocation())
+                .departureLat(request.getDepartureLat())
+                .departureLng(request.getDepartureLng())
+                .destinationLocation(request.getDestinationLocation())
+                .destinationLat(request.getDestinationLat())
+                .destinationLng(request.getDestinationLng())
+                .departureTime(request.getDepartureTime())
+                .maxPassengers(request.getMaxPassengers())
+                .description(request.getDescription())
+                .autoAccept(request.isAutoAccept())
+                .price(request.getPrice())
+                .tags(tags)
+                .build();
+        Post saved = postRepository.save(post);
+        return PostResponse.from(saved, fetchNickname(saved.getMemberId()));
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostSummaryResponse> getAllPosts() {
+        List<Post> posts = postRepository.findByDeletedFalseWithTagsOrderByCreatedAtDesc();
+        Set<Long> memberIds = posts.stream().map(Post::getMemberId).collect(Collectors.toSet());
+        Map<Long, String> nicknameMap = memberRepository.findAllById(memberIds).stream()
+                .collect(Collectors.toMap(Member::getId, Member::getNickname));
+        return posts.stream()
+                .map(p -> PostSummaryResponse.from(p, nicknameMap.getOrDefault(p.getMemberId(), "알 수 없음")))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public PostDetailResponse getPostById(Long id) {
+        Post post = postRepository.findByIdAndDeletedFalseWithTags(id)
+                .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
+        return PostDetailResponse.from(post, fetchNickname(post.getMemberId()));
+    }
+
+    @Transactional
+    public PostResponse updatePost(Long id, PostUpdateRequest request, Long requesterId) {
+        Post post = postRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
+        validateOwner(post, requesterId);
+        List<Tag> tags = resolveTags(request.getTagIds());
+        post.updateFrom(new PostUpdateCommand(
+                request.getTitle(),
+                request.getDepartureLocation(),
+                request.getDepartureLat(),
+                request.getDepartureLng(),
+                request.getDestinationLocation(),
+                request.getDestinationLat(),
+                request.getDestinationLng(),
+                request.getDepartureTime(),
+                request.getMaxPassengers(),
+                request.getDescription(),
+                request.isAutoAccept(),
+                request.getStatus(),
+                request.getPrice(),
+                tags
+        ));
+        return PostResponse.from(post, fetchNickname(post.getMemberId()));
+    }
+
+    @Transactional
+    public void deletePost(Long id, Long requesterId) {
+        Post post = postRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new CarpoolException(ErrorCode.POST_NOT_FOUND));
+        validateOwner(post, requesterId);
+
+        List<Long> acceptedIds = applicationRepository
+                .findByPostIdAndStatus(id, ApplicationStatus.ACCEPTED)
+                .stream()
+                .map(Application::getApplicantId)
+                .collect(Collectors.toList());
+
+        notificationService.saveAll(acceptedIds.stream()
+                .map(aid -> Notification.ofPostCancelled(aid, id))
+                .collect(Collectors.toList()));
+        notificationPublisher.publishToMany(acceptedIds, NotificationPayload.builder()
+                .type(NotificationType.POST_CANCELLED)
+                .message("신청한 카풀 게시글이 취소되었습니다.")
+                .data(Map.of("postId", id))
+                .build());
+
+        List<Application> pendingApps = applicationRepository.findByPostIdAndStatus(id, ApplicationStatus.PENDING);
+        pendingApps.forEach(Application::reject);
+
+        post.delete();
+    }
+
+    private String fetchNickname(Long memberId) {
+        return memberRepository.findById(memberId)
+                .map(Member::getNickname)
+                .orElse("알 수 없음");
+    }
+
+    private List<Tag> resolveTags(List<Long> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) return List.of();
+        List<Tag> tags = tagRepository.findAllByIdIn(tagIds);
+        if (tags.size() != tagIds.size()) {
+            throw new CarpoolException(ErrorCode.TAG_NOT_FOUND);
+        }
+        return tags;
+    }
+
+    private void validateOwner(Post post, Long requesterId) {
+        if (!post.getMemberId().equals(requesterId)) {
+            throw new CarpoolException(ErrorCode.POST_FORBIDDEN);
+        }
+    }
+}

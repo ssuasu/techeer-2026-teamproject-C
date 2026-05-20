@@ -14,8 +14,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.mockito.Mock;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,9 +39,10 @@ class PostIntegrationTest {
     @Autowired MemberRepository memberRepository;
     @Autowired JwtTokenProvider jwtTokenProvider;
 
-    @Mock RefreshTokenRedisRepository refreshTokenRedisRepository;
-    @Mock BlacklistRedisRepository blacklistRedisRepository;
-    @Mock com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher notificationPublisher;
+    @MockitoBean RedisMessageListenerContainer listenerContainer;
+    @MockitoBean RefreshTokenRedisRepository refreshTokenRedisRepository;
+    @MockitoBean BlacklistRedisRepository blacklistRedisRepository;
+    @MockitoBean com.techeer.carpool.domain.notification.publisher.RedisNotificationPublisher notificationPublisher;
 
     private Long ownerId;
     private Long otherId;
@@ -172,7 +174,7 @@ class PostIntegrationTest {
     @DisplayName("게시글 수정 성공")
     void updatePost_success() throws Exception {
         Map<String, Object> body = buildUpdateBody("수정된 제목", "수정된 내용");
-        mockMvc.perform(put("/api/v1/posts/{id}", postId)
+        mockMvc.perform(patch("/api/v1/posts/{id}", postId)
                         .header("Authorization", ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -184,7 +186,7 @@ class PostIntegrationTest {
     @DisplayName("게시글 수정 실패 - 타인이 수정 시도")
     void updatePost_forbidden() throws Exception {
         Map<String, Object> body = buildUpdateBody("해킹된 제목", "");
-        mockMvc.perform(put("/api/v1/posts/{id}", postId)
+        mockMvc.perform(patch("/api/v1/posts/{id}", postId)
                         .header("Authorization", otherToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -196,7 +198,7 @@ class PostIntegrationTest {
     @DisplayName("게시글 수정 실패 - 존재하지 않는 게시글")
     void updatePost_notFound() throws Exception {
         Map<String, Object> body = buildUpdateBody("없는 게시글", "");
-        mockMvc.perform(put("/api/v1/posts/{id}", 99999L)
+        mockMvc.perform(patch("/api/v1/posts/{id}", 99999L)
                         .header("Authorization", ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))

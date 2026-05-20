@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -132,19 +134,25 @@ public class Post extends SoftDeletableEntity {
     }
 
     public void updateFrom(PostUpdateCommand command) {
-        this.title = command.title();
-        this.departureLocation = command.departureLocation();
-        this.departureLat = command.departureLat();
-        this.departureLng = command.departureLng();
-        this.destinationLocation = command.destinationLocation();
-        this.destinationLat = command.destinationLat();
-        this.destinationLng = command.destinationLng();
-        this.departureTime = command.departureTime();
-        this.maxPassengers = command.maxPassengers();
+        if (command.title() != null) this.title = command.title();
+        if (command.departureLocation() != null) this.departureLocation = command.departureLocation();
+        if (command.departureLat() != null) this.departureLat = command.departureLat();
+        if (command.departureLng() != null) this.departureLng = command.departureLng();
+        if (command.destinationLocation() != null) this.destinationLocation = command.destinationLocation();
+        if (command.destinationLat() != null) this.destinationLat = command.destinationLat();
+        if (command.destinationLng() != null) this.destinationLng = command.destinationLng();
+        if (command.departureTime() != null) this.departureTime = command.departureTime();
+        if (command.maxPassengers() > 0) this.maxPassengers = command.maxPassengers();
         if (command.description() != null) this.description = command.description();
+        if (command.status() != null) this.status = command.status();
+        if (command.price() != null) this.price = command.price();
         this.autoAccept = command.autoAccept();
-        this.status = command.status();
-        this.price = command.price();
-        this.tags = command.tags() != null ? new ArrayList<>(command.tags()) : new ArrayList<>();
+        if (command.tags() != null) {
+            Set<Long> currentIds = this.tags.stream().map(Tag::getId).collect(Collectors.toSet());
+            Set<Long> newIds = command.tags().stream().map(Tag::getId).collect(Collectors.toSet());
+            if (!currentIds.equals(newIds)) {
+                this.tags = new ArrayList<>(command.tags());
+            }
+        }
     }
 }
